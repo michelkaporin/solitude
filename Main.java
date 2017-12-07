@@ -16,7 +16,6 @@ import ch.lubu.Chunk;
 
 public class Main {
 	public static void main(String[] args) {
-		System.out.println("Hello, Solitude!");
 		AvaData avaData = new AvaData();
 		int[] maxBlockSize = { 1, 1000 }; // Fix the block size per chunk
 		boolean[] twoDimensions = { false, true }; // First run the retrieval from the key (single dimension), then over
@@ -29,6 +28,7 @@ public class Main {
 			List<Chunk> chunks = avaData.transferData(blockSize);
 
 			for (boolean twoDimensional : twoDimensions) {
+				
 				System.out.format("Block size per chunk: %s, Two Dimensional Benchmark: %s\n", blockSize,
 						Boolean.toString(twoDimensional));
 				System.out.format("Num Chunks: %d, Num Entries: %d\n", chunks.size(), avaData.counter);
