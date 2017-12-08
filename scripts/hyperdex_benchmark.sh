@@ -1,10 +1,13 @@
 #!/bin/bash
 
-# Arguments: server number - $0
+# Arguments:
+#   Server number: $0
+
+# Resolve the relative path because of https://github.com/rescrv/HyperDex/issues/216
+tempDir=$(greadlink -f ./../temp) # 'brew install coreutils' to make it work on Mac OS (equivalent of readlink in Linux)
 
 # Clean up coordinator and daemons' data
-tempDir="./../temp"
-rm -rf $tempDir/HyperDex_Da*/*
+rm -rf $tempDir/Hyperdex_Da*/*
 
 # Run coordinator
 hyperdex coordinator -l 127.0.0.1 -p 1982 -D $tempDir/Hyperdex_Data &
@@ -14,9 +17,10 @@ echo "PID of the coordinator: $coordinatorPID"
 # Run daemons
 for i in $(seq 1 $1)
 do
-    echo "Starting a daemon #$i in $tempDir/HyperDex_Daemon/$i"
-    mkdir -p $tempDir/HyperDex_Daemon/$i
-    hyperdex daemon --listen=127.0.0.1 --listen-port=201$i --coordinator=127.0.0.1 --coordinator-port=1982 --data=$tempDir/HyperDex_Daemon/$i &
+    daemonDir=$tempDir/Hyperdex_Daemon/$i
+    echo "Starting a daemon #$i in $daemonDir"
+    mkdir -p $daemonDir
+    hyperdex daemon --listen=127.0.0.1 --listen-port=201$i --coordinator=127.0.0.1 --coordinator-port=1982 --data=$daemonDir &
 done
 
 # Setup spaces
