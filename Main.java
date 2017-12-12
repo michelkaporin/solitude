@@ -12,16 +12,18 @@ import javax.crypto.SecretKey;
 import ch.lubu.AvaData;
 import ch.lubu.Chunk;
 
-
-
 public class Main {
+	private static int experimentReps = 1;
+	private static int maxChunkSize;
+	
 	public static void main(String[] args) {
-		AvaData avaData = new AvaData();
-		int[] maxBlockSize = { 1, 1000 }; // Fix the block size per chunk
-		boolean[] twoDimensions = { false, true }; // First run the retrieval from the key (single dimension), then over
-													// the second dimension
-		int experimentReps = 3; // Fix HyperDex repetition amount for statistical confidence
+		maxChunkSize = Integer.valueOf(args[0]);
+		experimentReps = Integer.valueOf(args[1]); // Fix HyperDex repetition amount for statistical confidence
 
+		int[] maxBlockSize = { 1, maxChunkSize }; // Fix the block size per chunk
+		boolean[] twoDimensions = { false, true }; // First run the retrieval from the key (single dimension), then over the second dimension
+
+		AvaData avaData = new AvaData();
 		SecretKey secretKey = generateSecretKey(); // Generate secret key for encrypted data representation
 		
 		for (int blockSize : maxBlockSize) {
@@ -42,7 +44,7 @@ public class Main {
 				}
 				BigDecimal avg = BigDecimal.valueOf(totalSizeBase).divide(BigDecimal.valueOf(chunks.size()), RoundingMode.HALF_UP);
 				System.out.format("Total Size: %d, Average Chunk Size: %s\n", totalSizeBase, avg.toString());
-				outputHyperdexStats(experimentReps, chunks, DataRepresentation.CHUNKED, twoDimensional, null);
+				outputHyperdexGeneralStats(blockSize, chunks, DataRepresentation.CHUNKED, twoDimensional, null);
 
 				// Chunked & compressed data
 				System.out.println(".:: Chunked & Compressed Data ::.");
@@ -53,7 +55,7 @@ public class Main {
 				}
 				avg = BigDecimal.valueOf(totalSize).divide(BigDecimal.valueOf(chunks.size()), RoundingMode.HALF_UP);
 				System.out.format("Total Size: %d, Average Chunk Size: %s\n", totalSize, avg.toString());
-				outputHyperdexStats(experimentReps, chunks, DataRepresentation.CHUNKED_COMPRESSED, twoDimensional, null);
+				outputHyperdexGeneralStats(blockSize, chunks, DataRepresentation.CHUNKED_COMPRESSED, twoDimensional, null);
 
 				// Chunked & compressed & encrypted data
 				System.out.println(".:: Chunked & Compressed & Encrypted Data ::.");
@@ -64,19 +66,19 @@ public class Main {
 				}
 				avg = BigDecimal.valueOf(totalSize).divide(BigDecimal.valueOf(chunks.size()), RoundingMode.HALF_UP);
 				System.out.format("Total Size: %d, Average Chunk Size: %s\n", totalSize, avg.toString());
-				outputHyperdexStats(experimentReps, chunks, DataRepresentation.CHUNKED_COMPRESSED_ENCRYPTED, twoDimensional,
+				outputHyperdexGeneralStats(blockSize, chunks, DataRepresentation.CHUNKED_COMPRESSED_ENCRYPTED, twoDimensional,
 						Optional.of(secretKey));
 			}
 		}
 	}
 
-	private static void outputHyperdexStats(int experimentReps, List<Chunk> chunks, DataRepresentation representation,
+	private static void outputHyperdexGeneralStats(int currentBlockSize, List<Chunk> chunks, DataRepresentation representation,
 			boolean twodimensional, Optional<SecretKey> key) {
 		for (int i = 0; i < experimentReps; i++) {
 			HyperDex hd = new HyperDex();
 
-			// Maintain map of chunks to delete because Ava Dataset contains duplicates (entries with the same timestamp)
-			Map<Long, Chunk> chunksToDelete = new HashMap<Long, Chunk>(); 
+			// Maintain map of chunks to delete because Ava dataset contains duplicates (entries with the same timestamp)
+			Map<String, Chunk> chunksToDelete = new HashMap<String, Chunk>();
 			
 			// PUT
 			for (Chunk chunk : chunks) {
@@ -98,7 +100,18 @@ public class Main {
 				}
 			}
 
-			System.out.format("%s\t%s\n", hd.getBenchmark().avgPut(), hd.getBenchmark().avgGet()); // Print PUT and GET average times
+			System.out.format("[%s]\t%s\t%s\n", currentBlockSize, hd.getBenchmark().avgPut(), hd.getBenchmark().avgGet()); // Print PUT and GET average times
+			
+			// Range GET: prove that chunking is better than issuing range retrieval requests
+			if (!twodimensional && currentBlockSize == 1) {
+				for (int j=1; j < maxChunkSize; j++) {
+					hd.resetBenchmark();
+					Chunk c1 = chunks.get(0);
+					Chunk c2 = chunks.get(j);
+					hd.getRange(c1, c2, representation);
+					System.out.format("[0..%s]\t%s\n", j, hd.getBenchmark().avgGet()); // Print PUT and GET average times
+				}
+			}
 
 			// DEL
 			for (Chunk chunk : chunksToDelete.values()) {

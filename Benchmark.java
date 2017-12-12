@@ -18,12 +18,17 @@ public class Benchmark {
 	
 	public double avgGet() {
 		if (this.getCount == 0) {
-			System.out.println("ds");
+			System.out.println("No GET requests happened so far.");
+			return 0;
 		}
 		return (this.getTime / this.getCount) / 1000000.0; // in ms
 	}
 	
 	public double avgPut() {
+		if (this.putCount == 0) {
+			System.out.println("No PUT requests happened so far.");
+			return 0;
+		}
 		return (this.putTime / this.putCount) / 1000000.0; // in ms
 	}
 }

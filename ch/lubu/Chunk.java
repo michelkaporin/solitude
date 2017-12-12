@@ -59,8 +59,9 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry>{
         return true;
     }
     
-    public long getPrimaryAttribute() {
-    		return this.timestamp;
+    public String getPrimaryAttribute() {	
+    		// A key in HyperDex is a string due to long and Timestamp types are not supported by the Java bindings
+    		return String.valueOf(this.timestamp);
     }
     
     public void setPrimaryAttribute(long time) {

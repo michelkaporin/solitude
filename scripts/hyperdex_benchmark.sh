@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # Arguments:
-#   Server number: $0
+#   Server number: $1
+#   Chunk size: $2
+#   Repetitions number: $3
 
 # Resolve the relative path because of https://github.com/rescrv/HyperDex/issues/216
 tempDir=$(greadlink -f ./../temp) # 'brew install coreutils' to make it work on Mac OS (equivalent of readlink in Linux)
@@ -24,11 +26,11 @@ do
 done
 
 # Setup spaces
-python setup_spaces.py
+python setup_spaces.py setup
 
 # Run benchmarking
 pushd ..
-java -classpath '.:/usr/local/share/java/org.hyperdex.client-1.8.1.jar' -Djava.library.path=/usr/local/lib Main
+java -classpath '.:/usr/local/share/java/org.hyperdex.client-1.8.1.jar' -Djava.library.path=/usr/local/lib Main $2 $3 >> temp/benchmark.txt
 popd
 
 # SIGTERM background HyperDex coordinator, daemons terminate themselfes after coordinator is down

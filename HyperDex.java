@@ -8,6 +8,7 @@ import javax.crypto.SecretKey;
 import org.hyperdex.client.Client;
 import org.hyperdex.client.HyperDexClientException;
 import org.hyperdex.client.Iterator;
+import org.hyperdex.client.Range;
 
 import ch.lubu.Chunk;
 
@@ -19,6 +20,7 @@ public class HyperDex {
 	private static String DEFAULT_IP = "127.0.0.1";
 	private static int DEFAULT_PORT = 1982;
 	private static String DATA_ATTRIBUTE_NAME = "data";
+	private static String FIRST_ATTRIBUTE_NAME = "time";
 	private static String SECOND_ATTRIBUTE_NAME = "temp_skin";
 
 	public HyperDex() {
@@ -110,20 +112,42 @@ public class HyperDex {
 	}
 
 	public Iterator getSecond(DataRepresentation representation, Object secondAttribute) {
-		String spacename = this.getSpaceName(representation, true);
+		String spaceName = this.getSpaceName(representation, true);
 
 		Map<String, Object> predicates = new HashMap<String, Object>();
 		predicates.put(SECOND_ATTRIBUTE_NAME, String.valueOf(secondAttribute));
 
 		long start = System.nanoTime();
-		Iterator it = client.search(spacename, predicates);
+		Iterator it = client.search(spaceName, predicates);
 		try {
 			if (it.hasNext()) {
 				benchmark.addGetRequestTime(System.nanoTime() - start);
 				return it;
 			} else {
-				// Most likely it was deleted already, because AVA dataset contains duplicates
-				//System.out.println("No results for " + String.valueOf(secondAttribute));
+				System.out.println("No results for " + String.valueOf(secondAttribute));
+			}
+		} catch (HyperDexClientException e) {
+			e.printStackTrace();
+			System.out.println("Interaction with HyperDex failed");
+		}
+
+		return null;
+	}
+	
+	public Iterator getRange(Chunk c1, Chunk c2, DataRepresentation representation) {
+		String spaceName = this.getSpaceName(representation, false);
+
+		Map<String, Object> predicates = new HashMap<String, Object>();
+		predicates.put(FIRST_ATTRIBUTE_NAME, new Range(c1.getPrimaryAttribute(), c2.getPrimaryAttribute()));
+		
+		long start = System.nanoTime();
+		Iterator it = client.search(spaceName, predicates);
+		try {
+			if (it.hasNext()) {
+				benchmark.addGetRequestTime(System.nanoTime() - start);
+				return it;
+			} else {
+				System.out.format("No results for the range [%s, %s]", c1.getPrimaryAttribute(), c2.getPrimaryAttribute()); // can provide range myself.
 			}
 		} catch (HyperDexClientException e) {
 			e.printStackTrace();
@@ -135,6 +159,10 @@ public class HyperDex {
 
 	public Benchmark getBenchmark() {
 		return this.benchmark;
+	}
+	
+	public void resetBenchmark() {
+		this.benchmark = new Benchmark();
 	}
 
 	private String getSpaceName(DataRepresentation representation, boolean twodimensional) {
