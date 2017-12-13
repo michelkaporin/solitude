@@ -8,7 +8,10 @@ if len(sys.argv) < 1:
     print "Please provide arguments to control hyperdex spaces"
     sys.exit(0)
 
-sys.path.append('/usr/local/lib/python2.7/site-packages') # Link the right library on Mac OS
+# Link the Python library
+sys.path.append('/usr/local/lib/python2.7/site-packages') # Mac OS
+sys.path.append('/usr/local/lib/python2.7/dist-packages') # Linux
+
 import hyperdex.admin
 a = hyperdex.admin.Admin('127.0.0.1', 1982)
 

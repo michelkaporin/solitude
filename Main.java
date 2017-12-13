@@ -28,6 +28,20 @@ public class Main {
 		
 		for (int blockSize : maxBlockSize) {
 			List<Chunk> chunks = avaData.transferData(blockSize);
+			
+			// Optimise chunking, compression and encryption computations
+			int totalSizeBase = 0;
+			int totalSizeCompressed = 0;
+			int totalSizeEncrypted = 0;
+
+			for (Chunk chunk : chunks) {
+				byte[] chunkedData = chunk.getData();
+				byte[] cCompressedData = chunk.getCompressedData();
+				byte[] ccEncryptedData = chunk.getCompressedAndEncryptedData(secretKey.getEncoded());
+				totalSizeBase += chunkedData.length;
+				totalSizeCompressed += cCompressedData.length;
+				totalSizeEncrypted += ccEncryptedData.length;
+			}
 
 			for (boolean twoDimensional : twoDimensions) {
 				
@@ -37,35 +51,20 @@ public class Main {
 
 				// Chunked data
 				System.out.println(".:: Chunked Data ::.");
-				int totalSizeBase = 0;
-				for (Chunk chunk : chunks) {
-					byte[] data = chunk.getData();
-					totalSizeBase += data.length;
-				}
 				BigDecimal avg = BigDecimal.valueOf(totalSizeBase).divide(BigDecimal.valueOf(chunks.size()), RoundingMode.HALF_UP);
 				System.out.format("Total Size: %d, Average Chunk Size: %s\n", totalSizeBase, avg.toString());
 				outputHyperdexGeneralStats(blockSize, chunks, DataRepresentation.CHUNKED, twoDimensional, null);
 
 				// Chunked & compressed data
 				System.out.println(".:: Chunked & Compressed Data ::.");
-				int totalSize = 0;
-				for (Chunk block : chunks) {
-					byte[] data = block.getCompressedData();
-					totalSize += data.length;
-				}
-				avg = BigDecimal.valueOf(totalSize).divide(BigDecimal.valueOf(chunks.size()), RoundingMode.HALF_UP);
-				System.out.format("Total Size: %d, Average Chunk Size: %s\n", totalSize, avg.toString());
+				avg = BigDecimal.valueOf(totalSizeCompressed).divide(BigDecimal.valueOf(chunks.size()), RoundingMode.HALF_UP);
+				System.out.format("Total Size: %d, Average Chunk Size: %s\n", totalSizeCompressed, avg.toString());
 				outputHyperdexGeneralStats(blockSize, chunks, DataRepresentation.CHUNKED_COMPRESSED, twoDimensional, null);
 
 				// Chunked & compressed & encrypted data
 				System.out.println(".:: Chunked & Compressed & Encrypted Data ::.");
-				totalSize = 0;
-				for (Chunk chunk : chunks) {
-					byte[] data = chunk.getCompressedAndEncryptedData(secretKey.getEncoded());
-					totalSize += data.length;
-				}
-				avg = BigDecimal.valueOf(totalSize).divide(BigDecimal.valueOf(chunks.size()), RoundingMode.HALF_UP);
-				System.out.format("Total Size: %d, Average Chunk Size: %s\n", totalSize, avg.toString());
+				avg = BigDecimal.valueOf(totalSizeCompressed).divide(BigDecimal.valueOf(chunks.size()), RoundingMode.HALF_UP);
+				System.out.format("Total Size: %d, Average Chunk Size: %s\n", totalSizeEncrypted, avg.toString());
 				outputHyperdexGeneralStats(blockSize, chunks, DataRepresentation.CHUNKED_COMPRESSED_ENCRYPTED, twoDimensional,
 						Optional.of(secretKey));
 			}

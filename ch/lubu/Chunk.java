@@ -22,6 +22,10 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry>{
     
     private long timestamp; // identifies the timestamp of the last entry in the chunk
     public Object secondAttribute; // specifies second attribute to query that chunk
+    
+    private byte[] data;
+    private byte[] compressed;
+    private byte[] compressedAndEncrypted;
 
     private Chunk(int maxEntries) {
         this.maxEntries = maxEntries;
@@ -73,6 +77,10 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry>{
     }
 
     public byte[] getData() {
+    		if (data != null) {
+    			return data;
+    		}
+    		
         int len_tot = 0;
         for (Entry item : entries)
             len_tot += getSizeEntry(item);
@@ -83,10 +91,16 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry>{
             System.arraycopy(tmp, 0, tot, cur_index, tmp.length);
             cur_index += tmp.length;
         }
+        data = tot;
+        
         return tot;
     }
 
     public byte[] getCompressedData() {
+    		if (compressed != null) {
+    			return compressed;
+    		}
+    		
         Deflater compresser = new Deflater();
         byte[] input = getData();
         byte[] output_buffer = new byte[input.length];
@@ -95,10 +109,16 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry>{
         int numBytes = compresser.deflate(output_buffer);
         byte[] result = new byte[numBytes];
         System.arraycopy(output_buffer, 0, result, 0, numBytes);
+        compressed = result;
+        
         return result;
     }
 
     public byte[] getCompressedAndEncryptedData(byte[] key) {
+    		if (compressedAndEncrypted != null) {
+    			return compressedAndEncrypted;
+    		}
+    		
     		byte[] finalResult = null;
 	    	try {
 	        SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
@@ -120,6 +140,7 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry>{
 	    	} catch (Exception e) {
 	    		System.out.println("Failed to compress and encrypt the chunk.");
 	    	}
+	    	compressedAndEncrypted = finalResult;
 	    	
         return finalResult;
     }
