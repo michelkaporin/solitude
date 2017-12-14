@@ -20,7 +20,7 @@ if [ ! -z "$tempDir" ]
 then
     # Clean up coordinator and daemons' data
     rm -rf $tempDir/*
-    echo "Contents of tempDir were emptied."
+    echo "Contents of tempDir ($tempDir) were emptied."
 else 
     echo "tempDir cannot be resolved"
     exit 1
