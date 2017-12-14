@@ -6,9 +6,25 @@
 #   Repetitions number: $3
 
 # Resolve the relative path because of https://github.com/rescrv/HyperDex/issues/216
-tempDir=$(greadlink -f ./../temp) # 'brew install coreutils' to make it work on Mac OS (equivalent of readlink in Linux)
-# Clean up coordinator and daemons' data
-rm -rf $tempDir/*
+if [ $(uname -s) == Linux ]
+then
+    tempDir=$(readlink -f ./../temp); 
+    echo "Linux environment detected"
+else
+    # 'brew install coreutils' to make it work on Mac OS (equivalent of readlink in Linux)
+    tempDir=$(greadlink -f ./../temp) 
+    echo "MacOS environment detected"
+fi
+    
+if [ ! -z "$tempDir" ]
+then
+    # Clean up coordinator and daemons' data
+    rm -rf $tempDir/*
+    echo "Contents of tempDir were emptied."
+else 
+    echo "tempDir cannot be resolved"
+    exit 1
+fi
 
 # Run coordinator
 mkdir -p $tempDir/hyperdex_data
