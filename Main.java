@@ -25,6 +25,7 @@ public class Main {
 
 		AvaData avaData = new AvaData();
 		SecretKey secretKey = generateSecretKey(); // Generate secret key for encrypted data representation
+		HyperDex hd = new HyperDex();
 		
 		for (int blockSize : maxBlockSize) {
 			List<Chunk> chunks = avaData.transferData(blockSize);
@@ -53,28 +54,28 @@ public class Main {
 				System.out.println(".:: Chunked Data ::.");
 				BigDecimal avg = BigDecimal.valueOf(totalSizeBase).divide(BigDecimal.valueOf(chunks.size()), RoundingMode.HALF_UP);
 				System.out.format("Total Size: %d, Average Chunk Size: %s\n", totalSizeBase, avg.toString());
-				outputHyperdexGeneralStats(blockSize, chunks, DataRepresentation.CHUNKED, twoDimensional, null);
+				outputHyperdexGeneralStats(blockSize, chunks, hd, DataRepresentation.CHUNKED, twoDimensional, null);
 
 				// Chunked & compressed data
 				System.out.println(".:: Chunked & Compressed Data ::.");
 				avg = BigDecimal.valueOf(totalSizeCompressed).divide(BigDecimal.valueOf(chunks.size()), RoundingMode.HALF_UP);
 				System.out.format("Total Size: %d, Average Chunk Size: %s\n", totalSizeCompressed, avg.toString());
-				outputHyperdexGeneralStats(blockSize, chunks, DataRepresentation.CHUNKED_COMPRESSED, twoDimensional, null);
+				outputHyperdexGeneralStats(blockSize, chunks, hd, DataRepresentation.CHUNKED_COMPRESSED, twoDimensional, null);
 
 				// Chunked & compressed & encrypted data
 				System.out.println(".:: Chunked & Compressed & Encrypted Data ::.");
 				avg = BigDecimal.valueOf(totalSizeCompressed).divide(BigDecimal.valueOf(chunks.size()), RoundingMode.HALF_UP);
 				System.out.format("Total Size: %d, Average Chunk Size: %s\n", totalSizeEncrypted, avg.toString());
-				outputHyperdexGeneralStats(blockSize, chunks, DataRepresentation.CHUNKED_COMPRESSED_ENCRYPTED, twoDimensional,
+				outputHyperdexGeneralStats(blockSize, chunks, hd, DataRepresentation.CHUNKED_COMPRESSED_ENCRYPTED, twoDimensional,
 						Optional.of(secretKey));
 			}
 		}
 	}
 
-	private static void outputHyperdexGeneralStats(int currentBlockSize, List<Chunk> chunks, DataRepresentation representation,
+	private static void outputHyperdexGeneralStats(int currentBlockSize, List<Chunk> chunks, HyperDex hd, DataRepresentation representation,
 			boolean twodimensional, Optional<SecretKey> key) {
 		for (int i = 0; i < experimentReps; i++) {
-			HyperDex hd = new HyperDex();
+			hd.resetBenchmark();
 
 			// Maintain map of chunks to delete because Ava dataset contains duplicates (entries with the same timestamp)
 			Map<String, Chunk> chunksToDelete = new HashMap<String, Chunk>();
