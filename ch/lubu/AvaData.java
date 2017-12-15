@@ -2,17 +2,41 @@ package ch.lubu;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ch.lubu.AvaDataEntry;
 import ch.lubu.AvaDataImporter;
 
 public class AvaData {
 	public int counter = 0;
-
-	public List<Chunk> transferData(int maxBlocksize) {
-		ArrayList<Chunk> chunks = new ArrayList<>();
+	private List<Chunk> chunks = new ArrayList<Chunk>();
+	private List<Chunk> tempSkinUniqueChunks = new ArrayList<Chunk>(); // Maintain map of chunks with unique second attribute
+	
+	public List<Chunk> getChunks(int maxBlocksize, boolean tempSkinUnique) {
+		if (tempSkinUnique) {
+			return this.getTempSkinUniqueChunks(maxBlocksize);
+		}
+		
+		if (this.chunks.size() == 0) {
+			this.transferData(maxBlocksize);
+		}
+		
+		return this.chunks;
+	}
+	
+	private List<Chunk> getTempSkinUniqueChunks(int maxBlocksize) {
+		if (this.tempSkinUniqueChunks.size() == 0) {
+			this.transferData(maxBlocksize);
+		}
+		
+		return this.tempSkinUniqueChunks;
+	}
+	
+	private void transferData(int maxBlocksize) {
 		Chunk curChunk = Chunk.getNewBlock(maxBlocksize);
+		Map<Integer, Chunk> tempSkinMap = new HashMap<Integer, Chunk>(); 
 		AvaDataImporter importer = null;
 		AvaDataEntry lastEntry = null;
 		for (int item = 1; item <= 10; item++) {
@@ -23,7 +47,11 @@ public class AvaData {
 					if (curChunk.getRemainingSpace() < 10) {
 						curChunk.setPrimaryAttribute(entry.time_stamp); // set primary key for the chunk
 						curChunk.setSecondAttribute(entry.temp_skin); // set secondary key for the chunk
-						chunks.add(curChunk);
+						if (tempSkinMap.get(entry.temp_skin) == null) {
+							this.tempSkinUniqueChunks.add(curChunk);
+							tempSkinMap.put(entry.temp_skin, curChunk);
+						}
+						this.chunks.add(curChunk);
 						curChunk = Chunk.getNewBlock(maxBlocksize);
 					}
 					curChunk.putIotData(new Entry(entry.time_stamp, "temp_amp", entry.temp_amb));
@@ -47,13 +75,17 @@ public class AvaData {
 			} catch (IOException e) {
 				System.out.println("Ava data was not found.");
 				e.printStackTrace();
+				System.exit(1);
 			}
 		}
 		if (curChunk.getNumEntries() > 0) {
 			curChunk.setPrimaryAttribute(lastEntry.time_stamp); // set primary key for the chunk
 			curChunk.setSecondAttribute(lastEntry.temp_skin); // set secondary key for the chunk
-			chunks.add(curChunk);
+			if (tempSkinMap.get(lastEntry.temp_skin) == null) {
+				tempSkinUniqueChunks.add(curChunk);
+				tempSkinMap.put(lastEntry.temp_skin, curChunk);
+			}
+			this.chunks.add(curChunk);
 		}
-		return chunks;
 	}
 }

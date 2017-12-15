@@ -28,22 +28,21 @@ public class Main {
 		HyperDex hd = new HyperDex();
 		
 		for (int blockSize : maxBlockSize) {
-			List<Chunk> chunks = avaData.transferData(blockSize);
-			
-			// Optimise chunking, compression and encryption computations
-			int totalSizeBase = 0;
-			int totalSizeCompressed = 0;
-			int totalSizeEncrypted = 0;
-			for (Chunk chunk : chunks) {
-				byte[] chunkedData = chunk.getData();
-				byte[] cCompressedData = chunk.getCompressedData();
-				byte[] ccEncryptedData = chunk.getCompressedAndEncryptedData(secretKey.getEncoded());
-				totalSizeBase += chunkedData.length;
-				totalSizeCompressed += cCompressedData.length;
-				totalSizeEncrypted += ccEncryptedData.length;
-			}
-
 			for (boolean twoDimensional : twoDimensions) {
+				List<Chunk> chunks = avaData.getChunks(blockSize, twoDimensional);
+				
+				// Optimise chunking, compression and encryption computations
+				int totalSizeBase = 0;
+				int totalSizeCompressed = 0;
+				int totalSizeEncrypted = 0;
+				for (Chunk chunk : chunks) {
+					byte[] chunkedData = chunk.getData();
+					byte[] cCompressedData = chunk.getCompressedData();
+					byte[] ccEncryptedData = chunk.getCompressedAndEncryptedData(secretKey.getEncoded());
+					totalSizeBase += chunkedData.length;
+					totalSizeCompressed += cCompressedData.length;
+					totalSizeEncrypted += ccEncryptedData.length;
+				}
 				System.out.format("Block size per chunk: %s, Two Dimensional Benchmark: %s\n", blockSize,
 						Boolean.toString(twoDimensional));
 				System.out.format("Num Chunks: %d, Num Entries: %d\n", chunks.size(), avaData.counter);
