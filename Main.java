@@ -62,7 +62,7 @@ public class Main {
 
 				// Chunked & compressed & encrypted data
 				System.out.println(".:: Chunked & Compressed & Encrypted Data ::.");
-				avg = BigDecimal.valueOf(totalSizeCompressed).divide(BigDecimal.valueOf(chunks.size()), RoundingMode.HALF_UP);
+				avg = BigDecimal.valueOf(totalSizeEncrypted).divide(BigDecimal.valueOf(chunks.size()), RoundingMode.HALF_UP);
 				System.out.format("Total Size: %d, Average Chunk Size: %s\n", totalSizeEncrypted, avg.toString());
 				outputHyperdexGeneralStats(blockSize, chunks, hd, DataRepresentation.CHUNKED_COMPRESSED_ENCRYPTED, twoDimensional,
 						Optional.of(secretKey));
