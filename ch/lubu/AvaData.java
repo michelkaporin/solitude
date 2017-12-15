@@ -14,6 +14,7 @@ public class AvaData {
 		ArrayList<Chunk> chunks = new ArrayList<>();
 		Chunk curChunk = Chunk.getNewBlock(maxBlocksize);
 		AvaDataImporter importer = null;
+		AvaDataEntry lastEntry = null;
 		for (int item = 1; item <= 10; item++) {
 			try {
 				importer = new AvaDataImporter("./DATA", item);
@@ -37,8 +38,9 @@ public class AvaData {
 							new Entry(entry.time_stamp, "perfusion_index_infrared", entry.perfusion_index_infrared));
 					curChunk.putIotData(new Entry(entry.time_stamp, "phase_60kHz", entry.phase_60kHz));
 					curChunk.putIotData(new Entry(entry.time_stamp, "impedance_60kHz", entry.impedance_60kHz));
-
 					counter += 10;
+					
+					lastEntry = entry;
 				}
 				if (importer != null)
 					importer.close();
@@ -48,6 +50,8 @@ public class AvaData {
 			}
 		}
 		if (curChunk.getNumEntries() > 0) {
+			curChunk.setPrimaryAttribute(lastEntry.time_stamp); // set primary key for the chunk
+			curChunk.setSecondAttribute(lastEntry.temp_skin); // set secondary key for the chunk
 			chunks.add(curChunk);
 		}
 		return chunks;

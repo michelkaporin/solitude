@@ -21,7 +21,7 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry>{
     private List<Entry> entries = new ArrayList<>();
     
     private long timestamp; // identifies the timestamp of the last entry in the chunk
-    public Object secondAttribute; // specifies second attribute to query that chunk
+    public int secondAttribute; // specifies second attribute to query that chunk
     
     private byte[] data;
     private byte[] compressed;
@@ -72,7 +72,7 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry>{
 		this.timestamp = time;
     }
     
-    public void setSecondAttribute(Object attribute) {
+    public void setSecondAttribute(int attribute) {
     		this.secondAttribute = attribute;
     }
 

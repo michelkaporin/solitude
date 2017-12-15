@@ -39,21 +39,21 @@ if sys.argv[1] == setupArgName:
     a.add_space('''
     space chunked2
     key time
-    attributes data, temp_skin
+    attributes data, int temp_skin
     subspace temp_skin
     tolerate 2 failures
     ''')
     a.add_space('''
     space compressed_c2
     key time
-    attributes data, temp_skin
+    attributes data, int temp_skin
     subspace temp_skin
     tolerate 2 failures
     ''')
     a.add_space('''
     space encrypted_cc2
     key time
-    attributes data, temp_skin
+    attributes data, int temp_skin
     subspace temp_skin
     tolerate 2 failures
     ''')

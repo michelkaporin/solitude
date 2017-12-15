@@ -69,7 +69,7 @@ public class HyperDex {
 
 		attributes.put(DATA_ATTRIBUTE_NAME, new String(data));
 		if (twodimensional) {
-			attributes.put(SECOND_ATTRIBUTE_NAME, String.valueOf(chunk.secondAttribute)); // second attribute
+			attributes.put(SECOND_ATTRIBUTE_NAME, chunk.secondAttribute); // second attribute
 		}
 
 		try {
@@ -111,11 +111,11 @@ public class HyperDex {
 		}
 	}
 
-	public Iterator getSecond(DataRepresentation representation, Object secondAttribute) {
+	public Iterator getSecond(DataRepresentation representation, int secondAttribute) {
 		String spaceName = this.getSpaceName(representation, true);
 
 		Map<String, Object> predicates = new HashMap<String, Object>();
-		predicates.put(SECOND_ATTRIBUTE_NAME, String.valueOf(secondAttribute));
+		predicates.put(SECOND_ATTRIBUTE_NAME, secondAttribute);
 
 		long start = System.nanoTime();
 		Iterator it = client.search(spaceName, predicates);
@@ -131,6 +131,7 @@ public class HyperDex {
 			System.out.println("Interaction with HyperDex failed");
 		}
 
+		benchmark.addGetRequestTime(System.nanoTime() - start);
 		return null;
 	}
 	

@@ -34,7 +34,6 @@ public class Main {
 			int totalSizeBase = 0;
 			int totalSizeCompressed = 0;
 			int totalSizeEncrypted = 0;
-
 			for (Chunk chunk : chunks) {
 				byte[] chunkedData = chunk.getData();
 				byte[] cCompressedData = chunk.getCompressedData();
@@ -45,7 +44,6 @@ public class Main {
 			}
 
 			for (boolean twoDimensional : twoDimensions) {
-				
 				System.out.format("Block size per chunk: %s, Two Dimensional Benchmark: %s\n", blockSize,
 						Boolean.toString(twoDimensional));
 				System.out.format("Num Chunks: %d, Num Entries: %d\n", chunks.size(), avaData.counter);
