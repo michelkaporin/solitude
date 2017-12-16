@@ -10,16 +10,18 @@ import ch.lubu.AvaDataEntry;
 import ch.lubu.AvaDataImporter;
 
 public class AvaData {
-	public int counter = 0;
-	private List<Chunk> chunks = new ArrayList<Chunk>();
+	public int counter;
+	
+	private List<Chunk> chunks;
 	private List<Chunk> tempSkinUniqueChunks = new ArrayList<Chunk>(); // Maintain map of chunks with unique second attribute
+	private int cachedBlockSize = -1; // ensure correct block size is cached
 	
 	public List<Chunk> getChunks(int maxBlocksize, boolean tempSkinUnique) {
 		if (tempSkinUnique) {
 			return this.getTempSkinUniqueChunks(maxBlocksize);
 		}
 		
-		if (this.chunks.size() == 0) {
+		if (this.chunks == null || this.chunks.size() == 0 || cachedBlockSize != maxBlocksize) {
 			this.transferData(maxBlocksize);
 		}
 		
@@ -27,7 +29,7 @@ public class AvaData {
 	}
 	
 	private List<Chunk> getTempSkinUniqueChunks(int maxBlocksize) {
-		if (this.tempSkinUniqueChunks.size() == 0) {
+		if (this.tempSkinUniqueChunks == null || this.tempSkinUniqueChunks.size() == 0 || cachedBlockSize != maxBlocksize) {
 			this.transferData(maxBlocksize);
 		}
 		
@@ -39,6 +41,10 @@ public class AvaData {
 		Map<Integer, Chunk> tempSkinMap = new HashMap<Integer, Chunk>(); 
 		AvaDataImporter importer = null;
 		AvaDataEntry lastEntry = null;
+		this.chunks = new ArrayList<Chunk>();
+		this.tempSkinUniqueChunks = new ArrayList<Chunk>();
+		this.counter = 0;
+		
 		for (int item = 1; item <= 10; item++) {
 			try {
 				importer = new AvaDataImporter("./DATA", item);
@@ -78,6 +84,7 @@ public class AvaData {
 				System.exit(1);
 			}
 		}
+		
 		if (curChunk.getNumEntries() > 0) {
 			curChunk.setPrimaryAttribute(lastEntry.time_stamp); // set primary key for the chunk
 			curChunk.setSecondAttribute(lastEntry.temp_skin); // set secondary key for the chunk
@@ -87,5 +94,7 @@ public class AvaData {
 			}
 			this.chunks.add(curChunk);
 		}
+		
+		this.cachedBlockSize = maxBlocksize;
 	}
 }
