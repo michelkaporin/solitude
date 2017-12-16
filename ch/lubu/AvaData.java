@@ -13,7 +13,7 @@ public class AvaData {
 	public int counter;
 	
 	private List<Chunk> chunks;
-	private List<Chunk> tempSkinUniqueChunks = new ArrayList<Chunk>(); // Maintain map of chunks with unique second attribute
+	private List<Chunk> tempSkinUniqueChunks; // Maintain map of chunks with unique second attribute
 	private int cachedBlockSize = -1; // ensure correct block size is cached
 	
 	public List<Chunk> getChunks(int maxBlocksize, boolean tempSkinUnique) {
@@ -21,7 +21,7 @@ public class AvaData {
 			return this.getTempSkinUniqueChunks(maxBlocksize);
 		}
 		
-		if (this.chunks == null || this.chunks.size() == 0 || cachedBlockSize != maxBlocksize) {
+		if (this.chunks == null || cachedBlockSize != maxBlocksize) {
 			this.transferData(maxBlocksize);
 		}
 		
@@ -29,7 +29,7 @@ public class AvaData {
 	}
 	
 	private List<Chunk> getTempSkinUniqueChunks(int maxBlocksize) {
-		if (this.tempSkinUniqueChunks == null || this.tempSkinUniqueChunks.size() == 0 || cachedBlockSize != maxBlocksize) {
+		if (this.tempSkinUniqueChunks == null || cachedBlockSize != maxBlocksize) {
 			this.transferData(maxBlocksize);
 		}
 		
