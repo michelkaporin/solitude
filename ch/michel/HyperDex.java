@@ -1,9 +1,7 @@
+package ch.michel;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-
-import javax.crypto.SecretKey;
 
 import org.hyperdex.client.Client;
 import org.hyperdex.client.HyperDexClientException;
@@ -33,35 +31,8 @@ public class HyperDex {
 		this.benchmark = new Benchmark();
 	}
 
-	public boolean put(Chunk chunk, DataRepresentation state, Optional<SecretKey> secretKey, boolean twodimensional) {
+	public boolean put(Chunk chunk, String space, byte[] data, boolean twodimensional) {
 		Map<String, Object> attributes = new HashMap<String, Object>();
-
-		String space = getSpaceName(state, twodimensional);
-		byte[] data = null;
-		SecretKey key = null;
-
-		switch (state) {
-			case CHUNKED_COMPRESSED:
-				data = chunk.getCompressedData();
-				break;
-			case CHUNKED_COMPRESSED_ENCRYPTED:
-				if (secretKey.isPresent()) {
-					key = secretKey.get();
-				} else {
-					break;
-				}
-	
-				try {
-					data = chunk.getCompressedAndEncryptedData(key.getEncoded());
-				} catch (Exception e1) {
-					e1.printStackTrace();
-					System.out.println("Failed to obtain secret key");
-				}
-				break;
-			default:
-				data = chunk.getData();
-				break;
-		}
 
 		if (data == null) {
 			return false;
@@ -83,11 +54,11 @@ public class HyperDex {
 		}
 	}
 
-	public Map<String, Object> get(Chunk chunk, DataRepresentation representation) {
+	public Map<String, Object> get(Chunk chunk, String space) {
 		Map<String, Object> res = null;
 		long start = System.nanoTime();
 		try {
-			res = client.get(this.getSpaceName(representation, false), chunk.getPrimaryAttribute());
+			res = client.get(space, chunk.getPrimaryAttribute());
 		} catch (HyperDexClientException e) {
 			System.out.format("Retrieving %s did not succeed\n", chunk.getPrimaryAttribute());
 			e.printStackTrace();
@@ -96,10 +67,10 @@ public class HyperDex {
 
 		return res;
 	}
-
-	public Boolean del(Chunk chunk, DataRepresentation representation, boolean twodimensional) {
+	
+	public Boolean del(Chunk chunk, String space, boolean twodimensional) {
 		try {
-			Object res = client.del(this.getSpaceName(representation, twodimensional), chunk.getPrimaryAttribute());
+			Object res = client.del(space, chunk.getPrimaryAttribute());
 			if (res == null) {
 				return false;
 			}
@@ -111,14 +82,12 @@ public class HyperDex {
 		}
 	}
 
-	public Iterator getSecond(DataRepresentation representation, int secondAttribute) {
-		String spaceName = this.getSpaceName(representation, true);
-
+	public Iterator getSecond(String space, int secondAttribute) {
 		Map<String, Object> predicates = new HashMap<String, Object>();
 		predicates.put(SECOND_ATTRIBUTE_NAME, secondAttribute);
 
 		long start = System.nanoTime();
-		Iterator it = client.search(spaceName, predicates);
+		Iterator it = client.search(space, predicates);
 		try {
 			if (it.hasNext()) {
 				benchmark.addGetRequestTime(System.nanoTime() - start);
@@ -135,20 +104,18 @@ public class HyperDex {
 		return null;
 	}
 	
-	public Iterator getRange(Chunk c1, Chunk c2, DataRepresentation representation) {
-		String spaceName = this.getSpaceName(representation, false);
-
+	public Iterator getRange(Chunk c1, Chunk c2, String space) {
 		Map<String, Object> predicates = new HashMap<String, Object>();
 		predicates.put(FIRST_ATTRIBUTE_NAME, new Range(c1.getPrimaryAttribute(), c2.getPrimaryAttribute()));
 		
 		long start = System.nanoTime();
-		Iterator it = client.search(spaceName, predicates);
+		Iterator it = client.search(space, predicates);
 		try {
 			if (it.hasNext()) {
 				benchmark.addGetRequestTime(System.nanoTime() - start);
 				return it;
 			} else {
-				System.out.format("No results for the range [%s, %s]", c1.getPrimaryAttribute(), c2.getPrimaryAttribute()); // can provide range myself.
+				System.out.format("No results for the range [%s, %s]", c1.getPrimaryAttribute(), c2.getPrimaryAttribute());
 			}
 		} catch (HyperDexClientException e) {
 			e.printStackTrace();
@@ -164,25 +131,5 @@ public class HyperDex {
 	
 	public void resetBenchmark() {
 		this.benchmark = new Benchmark();
-	}
-
-	private String getSpaceName(DataRepresentation representation, boolean twodimensional) {
-		switch (representation) {
-		case CHUNKED_COMPRESSED:
-			if (twodimensional) {
-				return "compressed_c2";
-			}
-			return "compressed_c";
-		case CHUNKED_COMPRESSED_ENCRYPTED:
-			if (twodimensional) {
-				return "encrypted_cc2";
-			}
-			return "encrypted_cc";
-		default:
-			if (twodimensional) {
-				return "chunked2";
-			}
-			return "chunked";
-		}
 	}
 }

@@ -1,3 +1,4 @@
+package ch.michel;
 
 public class Benchmark {
 	private long getTime = 0;

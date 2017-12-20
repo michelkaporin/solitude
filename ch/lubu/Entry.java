@@ -7,25 +7,25 @@ public class Entry {
 
     private long timestamp;
 
-    private String metadata;
+    private int temp_skin;
+    
+    private byte[] data;
 
-    private double value;
-
-    public Entry(long timestamp, String metadata, double value) {
+    public Entry(long timestamp, int temp_skin, byte[] data) {
         this.timestamp = timestamp;
-        this.metadata = metadata;
-        this.value = value;
+        this.temp_skin = temp_skin;
+        this.data = data;
     }
 
     public long getTimestamp() {
         return timestamp;
     }
 
-    public String getMetadata() {
-        return metadata;
+    public int getValue() {
+        return temp_skin;
     }
-
-    public double getValue() {
-        return value;
+    
+    public byte[] getData() {
+    		return data;
     }
 }

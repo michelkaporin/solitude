@@ -1,20 +1,22 @@
 package ch.lubu;
 
 import javax.crypto.*;
-import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.nio.ByteBuffer;
+
+import ch.michel.DataRepresentation;
+
 import java.security.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.zip.Deflater;
 
 /**
  * Represents a data block containing data
  */
-public class Chunk implements Iterator<Entry>, Iterable<Entry>{
+public class Chunk implements Iterator<Entry>, Iterable<Entry> {
 
     private int maxEntries;
 
@@ -27,28 +29,12 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry>{
     private byte[] compressed;
     private byte[] compressedAndEncrypted;
 
-    private Chunk(int maxEntries) {
+    protected Chunk(int maxEntries) {
         this.maxEntries = maxEntries;
     }
 
     public static Chunk getNewBlock(int maxEntries) {
         return new Chunk(maxEntries);
-    }
-
-    private int getSizeEntry(Entry entry) {
-        return 8 + 4 + entry.getMetadata().length() * 2 + 8;
-    }
-
-    private byte[] entryToByte(Entry entry) {
-        int len = entry.getMetadata().length();
-        int lenTot = getSizeEntry(entry);
-        ByteBuffer data = ByteBuffer.allocate(lenTot);
-        data.putLong(entry.getTimestamp());
-        data.putInt(len);
-        for (char v : entry.getMetadata().toCharArray())
-            data.putChar(v);
-        data.putDouble(entry.getValue());
-        return data.array();
     }
 
     /**
@@ -75,19 +61,49 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry>{
     public void setSecondAttribute(int attribute) {
     		this.secondAttribute = attribute;
     }
+    
+    public byte[] getData(DataRepresentation state, Optional<SecretKey> secretKey) {
+		byte[] data = null;
+		
+		switch (state) {
+			case CHUNKED_COMPRESSED:
+				data = this.getCompressedData();
+				break;
+			case CHUNKED_COMPRESSED_ENCRYPTED:
+				SecretKey key = null;
+				if (secretKey.isPresent()) {
+					key = secretKey.get();
+				} else {
+					break;
+				}
+	
+				try {
+					data = this.getCompressedAndEncryptedData(key.getEncoded());
+				} catch (Exception e1) {
+					e1.printStackTrace();
+					System.out.println("Failed to obtain secret key");
+				}
+				break;
+			default:
+				data = this.getData();
+				break;
+		}
+		
+		return data;
+    }
 
-    public byte[] getData() {
+    private byte[] getData() {
     		if (data != null) {
     			return data;
     		}
     		
         int len_tot = 0;
         for (Entry item : entries)
-            len_tot += getSizeEntry(item);
+            len_tot += item.getData().length;
         int cur_index = 0;
         byte[] tot = new byte[len_tot];
         for (Entry item : entries) {
-            byte[] tmp = entryToByte(item);
+            byte[] tmp = item.getData();
             System.arraycopy(tmp, 0, tot, cur_index, tmp.length);
             cur_index += tmp.length;
         }
@@ -96,7 +112,7 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry>{
         return tot;
     }
 
-    public byte[] getCompressedData() {
+    private byte[] getCompressedData() {
     		if (compressed != null) {
     			return compressed;
     		}
@@ -114,7 +130,7 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry>{
         return result;
     }
 
-    public byte[] getCompressedAndEncryptedData(byte[] key) {
+    private byte[] getCompressedAndEncryptedData(byte[] key) {
     		if (compressedAndEncrypted != null) {
     			return compressedAndEncrypted;
     		}
@@ -143,44 +159,6 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry>{
 	    	compressedAndEncrypted = finalResult;
 	    	
         return finalResult;
-    }
-
-    public byte[] getCompressedAndEncryptedGCMData(byte[] key) throws Exception {
-        SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
-        int nonceSize = 12;
-
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        SecureRandom randomSecureRandom = new SecureRandom();
-        byte[] ivBytes = new byte[nonceSize];
-        randomSecureRandom.nextBytes(ivBytes);
-
-        GCMParameterSpec gcm = new GCMParameterSpec(cipher.getBlockSize() * 8, ivBytes);
-
-        cipher.init(Cipher.ENCRYPT_MODE, skeySpec, gcm);
-
-        byte[] compressedData = getCompressedData();
-        byte[] encrypted = cipher.doFinal(compressedData);
-        byte[] finalResult = new byte[ivBytes.length + encrypted.length];
-        System.arraycopy(ivBytes, 0, finalResult, 0, ivBytes.length);
-        System.arraycopy(encrypted,0, finalResult, ivBytes.length, encrypted.length);
-        return finalResult;
-    }
-
-    public byte[] getCompressedEncryptedSignedData(byte[] key, PrivateKey privECDSA, boolean useGCM) throws Exception {
-        Signature sig = Signature.getInstance("SHA256withECDSA");
-        sig.initSign(privECDSA);
-        byte[] data = null;
-        if(useGCM)
-            data = getCompressedAndEncryptedGCMData(key);
-        else
-            data = getCompressedAndEncryptedData(key);
-        sig.update(data);
-        byte[] signature = sig.sign();
-        ByteBuffer buff = ByteBuffer.allocate(data.length + signature.length + Integer.BYTES);
-        buff.putInt(signature.length);
-        buff.put(signature);
-        buff.put(data);
-        return buff.array();
     }
 
     private int curID = -1;

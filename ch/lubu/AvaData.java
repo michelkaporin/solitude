@@ -37,64 +37,68 @@ public class AvaData {
 	}
 	
 	private void transferData(int maxBlocksize) {
-		Chunk curChunk = Chunk.getNewBlock(maxBlocksize);
-		Map<Integer, Chunk> tempSkinMap = new HashMap<Integer, Chunk>(); 
 		AvaDataImporter importer = null;
-		AvaDataEntry lastEntry = null;
-		this.chunks = new ArrayList<Chunk>();
-		this.tempSkinUniqueChunks = new ArrayList<Chunk>();
 		this.counter = 0;
-		
-		for (int item = 1; item <= 10; item++) {
+		List<Entry> entries = new ArrayList<>();
+
+		// Import entries from CSVs
+		for (int csvIndex = 1; csvIndex <= 10; csvIndex++) {
 			try {
-				importer = new AvaDataImporter("./DATA", item);
+				importer = new AvaDataImporter("./DATA", csvIndex);
 				while (importer.hasNext()) {
 					AvaDataEntry entry = importer.next();
-					if (curChunk.getRemainingSpace() < 10) {
-						curChunk.setPrimaryAttribute(entry.time_stamp); // set primary key for the chunk
-						curChunk.setSecondAttribute(entry.temp_skin); // set secondary key for the chunk
-						if (tempSkinMap.get(entry.temp_skin) == null) {
-							this.tempSkinUniqueChunks.add(curChunk);
-							tempSkinMap.put(entry.temp_skin, curChunk);
-						}
-						this.chunks.add(curChunk);
-						curChunk = Chunk.getNewBlock(maxBlocksize);
-					}
-					curChunk.putIotData(new Entry(entry.time_stamp, "temp_amp", entry.temp_amb));
-					curChunk.putIotData(new Entry(entry.time_stamp, "temp_skin", entry.temp_skin));
-					curChunk.putIotData(new Entry(entry.time_stamp, "sleep_state", entry.sleep_state));
-					curChunk.putIotData(new Entry(entry.time_stamp, "avg_bpm", entry.avg_bpm));
-					curChunk.putIotData(new Entry(entry.time_stamp, "activity_index", entry.activity_index));
-					curChunk.putIotData(new Entry(entry.time_stamp, "accel_z", entry.accel_z));
-					curChunk.putIotData(
-							new Entry(entry.time_stamp, "perfusion_index_green", entry.perfusion_index_green));
-					curChunk.putIotData(
-							new Entry(entry.time_stamp, "perfusion_index_infrared", entry.perfusion_index_infrared));
-					curChunk.putIotData(new Entry(entry.time_stamp, "phase_60kHz", entry.phase_60kHz));
-					curChunk.putIotData(new Entry(entry.time_stamp, "impedance_60kHz", entry.impedance_60kHz));
-					counter += 10;
-					
-					lastEntry = entry;
+					byte[] entryData = String.format("accel_z: %s,activity_index: %s,app_frame_no: %s,"
+							+ "impedance_60kHz: %s,perfusion_index_green: %s,perfusion_index_infrared: %s,"
+							+ "phase_60kHz: %s,rr_quality: %s,sleep_state: %s,temp_amb: %s,", 
+							entry.accel_z, entry.activity_index, entry.app_frame_no, entry.impedance_60kHz, 
+							entry.perfusion_index_green, entry.perfusion_index_infrared, entry.phase_60kHz,
+							entry.rr_quality, entry.sleep_state, entry.temp_amb).getBytes(); // can be stored as JSON instead.
+					entries.add(new Entry(entry.time_stamp, entry.temp_skin, entryData));
 				}
-				if (importer != null)
+
+				if (importer != null) {
 					importer.close();
-			} catch (IOException e) {
-				System.out.println("Ava data was not found.");
-				e.printStackTrace();
-				System.exit(1);
+				}
+				} catch (IOException e) {
+					System.out.println("Ava data was not found.");
+					e.printStackTrace();
+					System.exit(1);
+				}
+				
 			}
+			
+		// Transfer data to chunks
+		Chunk curChunk = Chunk.getNewBlock(maxBlocksize);
+		this.chunks = new ArrayList<Chunk>();
+		this.tempSkinUniqueChunks = new ArrayList<Chunk>();
+		Map<Integer, Chunk> tempSkinMap = new HashMap<Integer, Chunk>();
+		Entry lastEntry = null;
+		
+		for (Entry entry : entries) {
+			if (curChunk.getRemainingSpace() < 1) {
+				addChunk(curChunk, tempSkinMap, lastEntry);
+				curChunk = Chunk.getNewBlock(maxBlocksize);
+			}
+			curChunk.putIotData(entry);
+			lastEntry = entry;
 		}
 		
 		if (curChunk.getNumEntries() > 0) {
-			curChunk.setPrimaryAttribute(lastEntry.time_stamp); // set primary key for the chunk
-			curChunk.setSecondAttribute(lastEntry.temp_skin); // set secondary key for the chunk
-			if (tempSkinMap.get(lastEntry.temp_skin) == null) {
-				tempSkinUniqueChunks.add(curChunk);
-				tempSkinMap.put(lastEntry.temp_skin, curChunk);
-			}
-			this.chunks.add(curChunk);
+			addChunk(curChunk, tempSkinMap, lastEntry);
 		}
 		
 		this.cachedBlockSize = maxBlocksize;
+	}
+
+	private void addChunk(Chunk curChunk, Map<Integer, Chunk> tempSkinMap, Entry lastEntry) {
+		int lastTempSkin = lastEntry.getValue();
+		curChunk.setPrimaryAttribute(lastEntry.getTimestamp()); // set primary key for the chunk
+		curChunk.setSecondAttribute(lastTempSkin); // set secondary key for the chunk
+		if (tempSkinMap.get(lastTempSkin) == null) {
+			this.tempSkinUniqueChunks.add(curChunk);
+			tempSkinMap.put(lastTempSkin, curChunk);
+		}
+		
+		this.chunks.add(curChunk);
 	}
 }

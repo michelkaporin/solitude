@@ -1,3 +1,4 @@
+package ch.michel;
 
 public enum DataRepresentation {
     CHUNKED,
