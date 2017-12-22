@@ -42,16 +42,14 @@ do
 done
 
 # Setup spaces
-python setup_spaces.py setup
+python setup_spaces.py
 
 # Run benchmarking
 pushd ..
 classPath='.:/usr/local/share/java/org.hyperdex.client-1.8.1.jar'
-javac *.java -classpath $classPath
-java -classpath $classPath -Djava.library.path=/usr/local/lib Main $2 $3 >> temp/hyperdex_benchmark.log
+javac **/*.java -classpath $classPath
+java -classpath $classPath -Djava.library.path=/usr/local/lib ch/michel/test/Main $2 $3 >> temp/hyperdex_benchmark.log
 popd
 
 # SIGTERM background HyperDex coordinator, daemons terminate themselfes after coordinator is down
 kill -15 $coordinatorPID
-
-test
