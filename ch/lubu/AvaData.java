@@ -80,6 +80,7 @@ public class AvaData {
 				curChunk = Chunk.getNewBlock(maxBlocksize);
 			}
 			curChunk.putIotData(entry);
+			this.counter +=1;
 			lastEntry = entry;
 		}
 		
