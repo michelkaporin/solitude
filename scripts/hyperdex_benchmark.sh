@@ -47,7 +47,7 @@ python setup_spaces.py
 # Run benchmarking
 pushd ..
 classPath='.:/usr/local/share/java/org.hyperdex.client-1.8.1.jar'
-javac **/*.java -classpath $classPath
+javac -classpath $classPath $(find . -name '*.java')
 java -classpath $classPath -Djava.library.path=/usr/local/lib ch/michel/test/Main $2 $3 >> temp/hyperdex_benchmark.log
 popd
 
