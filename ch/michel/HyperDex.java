@@ -50,6 +50,7 @@ public class HyperDex {
 			return res;
 		} catch (HyperDexClientException e) {
 			e.printStackTrace();
+			System.exit(1);
 			return false;
 		}
 	}
@@ -125,6 +126,31 @@ public class HyperDex {
 		return null;
 	}
 
+	public Iterator getTempRange(int temp1, int temp2, String space) {
+		Map<String, Object> predicates = new HashMap<String, Object>();
+		predicates.put(SECOND_ATTRIBUTE_NAME, new Range(Integer.valueOf(temp1), Integer.valueOf(temp2)));
+		
+		long start = System.nanoTime();
+		Iterator it = client.search(space, predicates);
+		try {
+			if (it.hasNext()) {
+				// Two ways to benchmark time: right after hasNext() or go through all elements and then benchmark
+				while (it.hasNext()) {
+					it.next();
+				}
+				benchmark.addGetRequestTime(System.nanoTime() - start);
+				return it;
+			} else {
+				System.out.format("No results for the range [%s, %s]", temp1, temp2);
+			}
+		} catch (HyperDexClientException e) {
+			e.printStackTrace();
+			System.out.println("Interaction with HyperDex failed");
+		}
+		
+		return null;
+	}
+	
 	public Benchmark getBenchmark() {
 		return this.benchmark;
 	}

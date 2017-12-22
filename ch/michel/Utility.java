@@ -1,8 +1,12 @@
 package ch.michel;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 import ch.lubu.Chunk;
 
@@ -32,18 +36,46 @@ public class Utility {
 			int lowTemp = (Integer) tempToCount.keySet().toArray()[begin];
 			int highTemp = (Integer) tempToCount.keySet().toArray()[end-1];
 
-			labels.add(new Label() {
-				String name = String.format("temp_l%s_h%s", lowTemp, highTemp);
-				int low = lowTemp;
-				int high = highTemp;
-			});
+			labels.add(new Label(String.format("temp_l%s_h%s", lowTemp, highTemp), lowTemp,  highTemp));
 			
 			begin += chunksPerLabel;
 			end += chunksPerLabel;
-
-			System.out.format("First: %s, Last: %s; ", lowTemp, highTemp);
 		}
 		
 		return labels;
+	}
+	
+	public static SecretKey generateSecretKey() {
+		KeyGenerator keyGen = null;
+		try {
+			keyGen = KeyGenerator.getInstance("AES");
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			System.out.println("Failed to obtain instance of AES");
+		}
+
+		keyGen.init(128); // for example
+
+		return keyGen.generateKey();
+	}
+
+	public static String getSpaceName(DataRepresentation representation, boolean twodimensional) {
+		switch (representation) {
+		case CHUNKED_COMPRESSED:
+			if (twodimensional) {
+				return "compressed_c2";
+			}
+			return "compressed_c";
+		case CHUNKED_COMPRESSED_ENCRYPTED:
+			if (twodimensional) {
+				return "encrypted_cc2";
+			}
+			return "encrypted_cc";
+		default:
+			if (twodimensional) {
+				return "chunked2";
+			}
+			return "chunked";
+		}
 	}
 }

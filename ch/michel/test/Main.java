@@ -1,22 +1,23 @@
-package ch.michel;
-
+package ch.michel.test;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 import ch.lubu.AvaData;
 import ch.lubu.Chunk;
+import ch.michel.DataRepresentation;
+import ch.michel.HyperDex;
+import ch.michel.Utility;
 
 public class Main {
 	private static int experimentReps = 1;
 	private static int maxChunkSize;
+	private static SecretKey secretKey = null;
 
 	public static void main(String[] args) {
 		maxChunkSize = Integer.valueOf(args[0]);
@@ -25,11 +26,10 @@ public class Main {
 		int[] maxBlockSize = { 1, maxChunkSize }; // Fix the block size per chunk
 		boolean[] twoDimensions = { false, true }; // First run the retrieval from the key (single dimension), then over
 													// the second dimension
-
 		AvaData avaData = new AvaData();
-		SecretKey secretKey = generateSecretKey(); // Generate secret key for encrypted data representation
+		secretKey = Utility.generateSecretKey(); // Generate secret key for encrypted data representation
 		HyperDex hd = new HyperDex();
-
+		
 		for (int blockSize : maxBlockSize) {
 			for (boolean twoDimensional : twoDimensions) {
 				List<Chunk> chunks = avaData.getChunks(blockSize, twoDimensional);
@@ -58,27 +58,27 @@ public class Main {
 				BigDecimal avg = BigDecimal.valueOf(totalSizeBase).divide(BigDecimal.valueOf(chunks.size()),
 						RoundingMode.HALF_UP);
 				System.out.format("Total Size: %d, Average Chunk Size: %s\n", totalSizeBase, avg.toString());
-				 outputHyperdexGeneralStats(blockSize, chunks, hd, DataRepresentation.CHUNKED, twoDimensional, null);
+				 outputHyperdexGeneralStats(blockSize, chunks, hd, DataRepresentation.CHUNKED, twoDimensional);
 
 				// Chunked & compressed data
 				System.out.println(".:: Chunked & Compressed Data ::.");
 				avg = BigDecimal.valueOf(totalSizeCompressed).divide(BigDecimal.valueOf(chunks.size()),
 						RoundingMode.HALF_UP);
 				System.out.format("Total Size: %d, Average Chunk Size: %s\n", totalSizeCompressed, avg.toString());
-				 outputHyperdexGeneralStats(blockSize, chunks, hd, DataRepresentation.CHUNKED_COMPRESSED, twoDimensional, null);
+				 outputHyperdexGeneralStats(blockSize, chunks, hd, DataRepresentation.CHUNKED_COMPRESSED, twoDimensional);
 
 				// Chunked & compressed & encrypted data
 				System.out.println(".:: Chunked & Compressed & Encrypted Data ::.");
 				avg = BigDecimal.valueOf(totalSizeEncrypted).divide(BigDecimal.valueOf(chunks.size()),
 						RoundingMode.HALF_UP);
 				System.out.format("Total Size: %d, Average Chunk Size: %s\n", totalSizeEncrypted, avg.toString());
-				 outputHyperdexGeneralStats(blockSize, chunks, hd, DataRepresentation.CHUNKED_COMPRESSED_ENCRYPTED, twoDimensional, Optional.of(secretKey));
+				 outputHyperdexGeneralStats(blockSize, chunks, hd, DataRepresentation.CHUNKED_COMPRESSED_ENCRYPTED, twoDimensional);
 			}
 		}
 	}
 
 	private static void outputHyperdexGeneralStats(int currentBlockSize, List<Chunk> chunks, HyperDex hd,
-			DataRepresentation representation, boolean twodimensional, Optional<SecretKey> key) {
+			DataRepresentation representation, boolean twodimensional) {
 		for (int i = 0; i < experimentReps; i++) {
 			hd.resetBenchmark();
 
@@ -86,7 +86,7 @@ public class Main {
 			Map<String, Chunk> chunksToDelete = new HashMap<String, Chunk>();
 
 			// PUT
-			put(chunks, hd, representation, twodimensional, key, chunksToDelete);
+			put(chunks, hd, representation, twodimensional, chunksToDelete);
 
 			// GET
 			get(chunks, hd, representation, twodimensional);
@@ -104,7 +104,7 @@ public class Main {
 
 	private static void del(HyperDex hd, DataRepresentation representation, boolean twodimensional,
 			Map<String, Chunk> chunksToDelete) {
-		String spaceName = getSpaceName(representation, twodimensional);
+		String spaceName = Utility.getSpaceName(representation, twodimensional);
 
 		for (Chunk chunk : chunksToDelete.values()) {
 			Boolean deleted = hd.del(chunk, spaceName, twodimensional);
@@ -117,7 +117,7 @@ public class Main {
 	private static void getRange(int currentBlockSize, List<Chunk> chunks, HyperDex hd,
 			DataRepresentation representation, boolean twodimensional) {
 		if (!twodimensional && currentBlockSize == 1) {
-			String spaceName = getSpaceName(representation, false);
+			String spaceName = Utility.getSpaceName(representation, false);
 			for (int j = 1; j < maxChunkSize; j++) {
 				hd.resetBenchmark();
 				Chunk c1 = chunks.get(0);
@@ -130,7 +130,7 @@ public class Main {
 
 	private static void get(List<Chunk> chunks, HyperDex hd, DataRepresentation representation,
 			boolean twodimensional) {
-		String spaceName = getSpaceName(representation, twodimensional);
+		String spaceName = Utility.getSpaceName(representation, twodimensional);
 		for (Chunk chunk : chunks) {
 			if (!twodimensional) {
 				hd.get(chunk, spaceName);
@@ -140,52 +140,17 @@ public class Main {
 		}
 	}
 
-	private static void put(List<Chunk> chunks, HyperDex hd, DataRepresentation representation, boolean twodimensional,
-			Optional<SecretKey> key, Map<String, Chunk> chunksToDelete) {
-		String spaceName = getSpaceName(representation, twodimensional);
+	private static void put(List<Chunk> chunks, HyperDex hd, DataRepresentation representation, boolean twodimensional, Map<String, Chunk> chunksToDelete) {
+		String spaceName = Utility.getSpaceName(representation, twodimensional);
 		for (Chunk chunk : chunks) {
 			// Insert chunk to the HyperDex space
-			byte[] data = chunk.getData(representation, key);
+			byte[] data = chunk.getData(representation, Optional.of(secretKey));
 			boolean success = hd.put(chunk, spaceName, data, twodimensional);
 			if (!success) {
 				System.out.format("Inserting %s did not succeed\n", chunk.getPrimaryAttribute());
 				continue;
 			}
 			chunksToDelete.put(chunk.getPrimaryAttribute(), chunk);
-		}
-	}
-
-	private static SecretKey generateSecretKey() {
-		KeyGenerator keyGen = null;
-		try {
-			keyGen = KeyGenerator.getInstance("AES");
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-			System.out.println("Failed to obtain instance of AES");
-		}
-
-		keyGen.init(128); // for example
-
-		return keyGen.generateKey();
-	}
-
-	private static String getSpaceName(DataRepresentation representation, boolean twodimensional) {
-		switch (representation) {
-		case CHUNKED_COMPRESSED:
-			if (twodimensional) {
-				return "compressed_c2";
-			}
-			return "compressed_c";
-		case CHUNKED_COMPRESSED_ENCRYPTED:
-			if (twodimensional) {
-				return "encrypted_cc2";
-			}
-			return "encrypted_cc";
-		default:
-			if (twodimensional) {
-				return "chunked2";
-			}
-			return "chunked";
 		}
 	}
 }
