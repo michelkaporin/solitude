@@ -58,7 +58,7 @@ try:
     subspace temp_skin
     tolerate 2 failures
     ''')
-    print "true"
+    print "Hyperdex spaces were created"
 except:
-    print "false"
+    print "Hyperdex spaces could not be created"
     
