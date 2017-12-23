@@ -15,7 +15,7 @@ try:
     A.rm_space('compressed_c2')
     A.rm_space('encrypted_cc2')
 except:
-    print "spaces do not exist"
+    pass
 
 try:
     A.add_space('''

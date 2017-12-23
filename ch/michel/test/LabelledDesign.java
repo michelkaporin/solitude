@@ -69,7 +69,7 @@ public class LabelledDesign {
 				// 1. Benchmark storing chunks in labels
 				// PUT
 				for (Chunk chunk : chunks) {
-					byte[] data = chunk.getData(DataRepresentation.CHUNKED_COMPRESSED_ENCRYPTED, Optional.of(secretKey));
+					byte[] data = chunk.getData(dr, Optional.of(secretKey));
 					String spaceName = getLabelName(labels, chunk);
 	
 					boolean success = hd.put(chunk, spaceName, data, false);
@@ -93,8 +93,6 @@ public class LabelledDesign {
 				}
 	
 				// 2. Benchmark ranges retrieval
-				hd.resetBenchmark();
-	
 				// PUT all chunks in a normal table
 				String spaceName = Utility.getSpaceName(dr, true);
 				for (Chunk plainEntry : plainEntries) {
@@ -109,7 +107,11 @@ public class LabelledDesign {
 				}
 				// GET chunks by ranges provided in labels
 				for (Label l : labels) {
-					hd.getTempRange(l.low, l.high, spaceName, maxChunkSize);
+					hd.resetBenchmark();
+					// Average out the time by repeating range gets 
+					for (int j=0; j < experimentReps; j++) {
+						hd.getTempRange(l.low, l.high, spaceName, maxChunkSize);
+					}
 					System.out.format("[%s..%s]\t%s\n", l.low, l.high, hd.getBenchmark().avgGet()); // Print PUT and GET
 																									// average times
 				}
