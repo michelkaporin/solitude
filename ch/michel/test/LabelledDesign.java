@@ -43,9 +43,10 @@ public class LabelledDesign {
 			Process p = Runtime.getRuntime().exec("python ./scripts/create_spaces.py " + spaceNames);
 			p.waitFor();
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			boolean success = Boolean.parseBoolean(stdInput.readLine());
+			String line = stdInput.readLine();
+			boolean success = Boolean.parseBoolean(line);
 			if (!success) {
-				System.out.println("Failed to create spaces for labels");
+				System.out.println("Failed to create spaces for labels, success=" + line);
 				System.exit(1);
 			}
 		} catch (IOException | InterruptedException e) {
@@ -108,7 +109,7 @@ public class LabelledDesign {
 				}
 				// GET chunks by ranges provided in labels
 				for (Label l : labels) {
-					hd.getTempRange(l.low, l.high, spaceName);
+					hd.getTempRange(l.low, l.high, spaceName, maxChunkSize);
 					System.out.format("[%s..%s]\t%s\n", l.low, l.high, hd.getBenchmark().avgGet()); // Print PUT and GET
 																									// average times
 				}

@@ -126,17 +126,19 @@ public class HyperDex {
 		return null;
 	}
 
-	public Iterator getTempRange(int temp1, int temp2, String space) {
+	public Iterator getTempRange(int temp1, int temp2, String space, int rangeLimit) {
 		Map<String, Object> predicates = new HashMap<String, Object>();
 		predicates.put(SECOND_ATTRIBUTE_NAME, new Range(Integer.valueOf(temp1), Integer.valueOf(temp2)));
 		
+		int count = 0;
 		long start = System.nanoTime();
 		Iterator it = client.search(space, predicates);
 		try {
 			if (it.hasNext()) {
 				// Two ways to benchmark time: right after hasNext() or go through all elements and then benchmark
-				while (it.hasNext()) {
+				while (it.hasNext() && count <= rangeLimit) {
 					it.next();
+					count++;
 				}
 				benchmark.addGetRequestTime(System.nanoTime() - start);
 				return it;
