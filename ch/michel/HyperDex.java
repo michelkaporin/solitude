@@ -113,6 +113,10 @@ public class HyperDex {
 		Iterator it = client.search(space, predicates);
 		try {
 			if (it.hasNext()) {
+				while (it.hasNext()) {
+					it.next();
+				}
+				
 				benchmark.addGetRequestTime(System.nanoTime() - start);
 				return it;
 			} else {
