@@ -1,0 +1,126 @@
+
+Block size per chunk: 1, Two Dimensional Benchmark: false
+Num Chunks: 29338, Num Entries: 29338
+.:: Chunked Data ::.
+Total Size: 5576316, Average Chunk Size: 190
+[1]	0.334216	0.328163
+[1]	0.379229	0.338501
+[1]	0.36113	0.323765
+.:: Chunked & Compressed Data ::.
+Total Size: 4268957, Average Chunk Size: 146
+[1]	0.394163	0.352257
+[1]	0.373982	0.348586
+[1]	0.394463	0.354381
+.:: Chunked & Compressed & Encrypted Data ::.
+Total Size: 5130544, Average Chunk Size: 175
+[1]	0.398351	0.350625
+[1]	0.385444	0.351477
+[1]	0.393062	0.320588
+
+Block size per chunk: 1, Two Dimensional Benchmark: true
+Num Chunks: 742, Num Entries: 29338
+.:: Chunked Data ::.
+Total Size: 141053, Average Chunk Size: 190
+No results for 2812
+No results for 2835
+No results for 2859
+No results for 2861
+No results for 3126
+No results for 3129
+[1]	0.735761	0.642367
+No results for 2812
+No results for 2835
+No results for 2859
+No results for 2861
+No results for 3126
+No results for 3129
+[1]	0.649209	0.532752
+No results for 2812
+No results for 2835
+No results for 2859
+No results for 2861
+No results for 3126
+No results for 3129
+[1]	0.659976	0.48515
+.:: Chunked & Compressed Data ::.
+Total Size: 107972, Average Chunk Size: 146
+No results for 2812
+No results for 2835
+No results for 2859
+No results for 2861
+No results for 3126
+No results for 3129
+[1]	0.825987	0.484078
+No results for 2812
+No results for 2835
+No results for 2859
+No results for 2861
+No results for 3126
+No results for 3129
+[1]	0.71239	0.518029
+No results for 2812
+No results for 2835
+No results for 2859
+No results for 2861
+No results for 3126
+No results for 3129
+[1]	0.719123	0.500909
+.:: Chunked & Compressed & Encrypted Data ::.
+Total Size: 129232, Average Chunk Size: 174
+No results for 2812
+No results for 2835
+No results for 2859
+No results for 2861
+No results for 3126
+No results for 3129
+[1]	0.695471	0.471002
+No results for 2812
+No results for 2835
+No results for 2859
+No results for 2861
+No results for 3126
+No results for 3129
+[1]	0.765565	0.556396
+No results for 2812
+No results for 2835
+No results for 2859
+No results for 2861
+No results for 3126
+No results for 3129
+[1]	0.942597	0.523821
+
+Block size per chunk: 1000, Two Dimensional Benchmark: false
+Num Chunks: 30, Num Entries: 29338
+.:: Chunked Data ::.
+Total Size: 5576316, Average Chunk Size: 185877
+[1000]	30.335754	29.200165
+[1000]	35.400381	30.994064
+[1000]	30.271523	29.084702
+.:: Chunked & Compressed Data ::.
+Total Size: 364213, Average Chunk Size: 12140
+[1000]	4.106758	3.811073
+[1000]	4.126275	3.824081
+[1000]	4.421727	4.307438
+.:: Chunked & Compressed & Encrypted Data ::.
+Total Size: 364944, Average Chunk Size: 12165
+[1000]	4.391956	4.626451
+[1000]	5.359855	3.856228
+[1000]	4.317803	3.795049
+
+Block size per chunk: 1000, Two Dimensional Benchmark: true
+Num Chunks: 23, Num Entries: 29338
+.:: Chunked Data ::.
+Total Size: 4248317, Average Chunk Size: 184709
+[1000]	71.477991	30.052449
+[1000]	60.176752	32.403718
+[1000]	64.213542	30.010641
+.:: Chunked & Compressed Data ::.
+Total Size: 276142, Average Chunk Size: 12006
+[1000]	7.953488	4.51614
+[1000]	7.933179	4.432235
+[1000]	7.919743	4.668633
+.:: Chunked & Compressed & Encrypted Data ::.
+Total Size: 276720, Average Chunk Size: 12031
+[1000]	7.880143	4.430835
+[1000]	7.852396	4.39881
+[1000]	8.012964	4.359443
