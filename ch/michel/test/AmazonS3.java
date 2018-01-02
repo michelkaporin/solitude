@@ -25,11 +25,12 @@ public class AmazonS3 {
 		
 		maxChunkSize = Integer.valueOf(args[0]);
 		experimentReps = Integer.valueOf(args[1]); // Fix HyperDex repetition amount for statistical confidence
-		String aws_access_key_id = args[2];
-		String aws_secret_access_key = args[3];
+		String hyperdexIP = args[2];
+		String aws_access_key_id = args[3];
+		String aws_secret_access_key = args[4];
 		
 		AvaData avaData = new AvaData();
-		HyperDex hd = new HyperDex();
+		HyperDex hd = new HyperDex(hyperdexIP, 1982);
 		S3 s3 = new S3(aws_access_key_id, aws_secret_access_key);
 		
 		secretKey = Utility.generateSecretKey(); // Generate secret key for encrypted data representation
