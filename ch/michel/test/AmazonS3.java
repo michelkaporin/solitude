@@ -44,26 +44,26 @@ public class AmazonS3 {
 
 			// HYPERDEX
 			// PUT
-//			for (Chunk chunk : chunks) {
-//				byte[] data = chunk.getData(dr, Optional.of(secretKey));
-//				boolean success = hd.put(chunk, spaceName, data, false);
-//				if (!success) {
-//					System.out.println("Failed to put chunk " + chunk.getPrimaryAttribute());
-//				}
-//				chunksToDelete.put(chunk.getPrimaryAttribute(), chunk);
-//			}
-//
-//			// GET
-//			for (Chunk chunk : chunks) {
-//				hd.get(chunk, spaceName);
-//			}
-//			System.out.format("[%s]\t%s\t%s\n", maxChunkSize, hd.getBenchmark().avgPut(), hd.getBenchmark().avgGet());
-//
-//			// DEL
-//			for (Chunk chunk : chunksToDelete.values()) {
-//				hd.del(chunk, spaceName, false);
-//			}
-//			
+			for (Chunk chunk : chunks) {
+				byte[] data = chunk.getData(dr, Optional.of(secretKey));
+				boolean success = hd.put(chunk, spaceName, data, false);
+				if (!success) {
+					System.out.println("Failed to put chunk " + chunk.getPrimaryAttribute());
+				}
+				chunksToDelete.put(chunk.getPrimaryAttribute(), chunk);
+			}
+
+			// GET
+			for (Chunk chunk : chunks) {
+				hd.get(chunk, spaceName);
+			}
+			System.out.format("HyperDex: [%s]\t%s\t%s\n", maxChunkSize, hd.getBenchmark().avgPut(), hd.getBenchmark().avgGet());
+
+			// DEL
+			for (Chunk chunk : chunksToDelete.values()) {
+				hd.del(chunk, spaceName, false);
+			}
+			
 			// AMAZON S3
 			// PUT
 			for (Chunk chunk : chunks) {
@@ -75,11 +75,11 @@ public class AmazonS3 {
 			for (Chunk chunk : chunks) {
 				s3.get(chunk, bucket);
 			}
-			System.out.format("[%s]\t%s\t%s\n", maxChunkSize, s3.getBenchmark().avgPut(), s3.getBenchmark().avgGet());
+			System.out.format("Amazon: [%s]\t%s\t%s\n", maxChunkSize, s3.getBenchmark().avgPut(), s3.getBenchmark().avgGet());
 
 			// DEL
 			for (Chunk chunk : chunksToDelete.values()) {
-				s3.del(chunk, spaceName);
+				s3.del(chunk, bucket);
 			}
 		}
 	}
