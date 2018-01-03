@@ -42,7 +42,7 @@ do
 done
 
 # Setup spaces
-python setup_spaces.py
+python setup_spaces.py 127.0.0.1
 
 # Run benchmarking
 pushd ..
