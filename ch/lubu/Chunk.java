@@ -6,12 +6,19 @@ import javax.crypto.spec.SecretKeySpec;
 
 import ch.michel.DataRepresentation;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.security.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 /**
  * Represents a data block containing data
@@ -62,7 +69,7 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry> {
     		this.secondAttribute = attribute;
     }
     
-    public byte[] getData(DataRepresentation state, Optional<SecretKey> secretKey) {
+    public byte[] serialise(DataRepresentation state, Optional<SecretKey> secretKey) {
 		byte[] data = null;
 		
 		switch (state) {
@@ -92,24 +99,68 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry> {
 		return data;
     }
 
+    public static Chunk deserialise(DataRepresentation state, byte[] encodedData, Optional<SecretKey> secretKey) {
+        byte[] data = null;
+
+        switch (state) {
+            case CHUNKED_COMPRESSED:
+                data = getDecompressedData(encodedData);
+                break;
+            case CHUNKED_COMPRESSED_ENCRYPTED:
+                if (secretKey.isPresent()) {
+                    data = getDecompressedEncrypted(encodedData, secretKey.get().getEncoded());
+                } else {
+                		System.out.println("Secret key to decrypt chunk was not provided.");
+                    System.exit(1);
+                }
+                break;
+            default:
+                data = encodedData;
+                break;
+        }
+        
+        ObjectInputStream ois = null;
+        SerialisableChunk schunk = null;
+		try {
+			ois = new ObjectInputStream(new ByteArrayInputStream(data));
+			schunk = (SerialisableChunk) ois.readObject();
+
+		} catch (IOException | ClassNotFoundException e) {
+			System.out.println("Failed to deserialise the chunk");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		
+        Chunk chunk = new Chunk(schunk.entries.size());
+        chunk.entries = schunk.entries;
+        
+        return chunk;
+    }
+
     private byte[] getData() {
     		if (data != null) {
     			return data;
     		}
-    		
-        int len_tot = 0;
-        for (Entry item : entries)
-            len_tot += item.getData().length;
-        int cur_index = 0;
-        byte[] tot = new byte[len_tot];
-        for (Entry item : entries) {
-            byte[] tmp = item.getData();
-            System.arraycopy(tmp, 0, tot, cur_index, tmp.length);
-            cur_index += tmp.length;
-        }
-        data = tot;
         
-        return tot;
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream oos;
+		try {
+			oos = new ObjectOutputStream(bos);
+	        SerialisableChunk schunk = new SerialisableChunk();
+	        schunk.entries = this.entries;
+	        
+	        oos.writeObject(schunk);
+	        oos.flush();
+	        
+	        data = bos.toByteArray();
+			bos.close();
+		} catch (IOException e) {
+			System.out.println("Failed to serialise object");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		
+        return data;
     }
 
     private byte[] getCompressedData() {
@@ -130,6 +181,24 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry> {
         return result;
     }
 
+    private static byte[] getDecompressedData(byte[] compressedData) {
+        Inflater decompresser = new Inflater();
+        decompresser.setInput(compressedData, 0, compressedData.length);
+        byte[] output_buffer = new byte[compressedData.length * 100];
+        int resultLength = 0;
+		try {
+			resultLength = decompresser.inflate(output_buffer);
+		} catch (DataFormatException e) {
+			System.out.println("Failed to decompress the chunk data");
+			e.printStackTrace();
+		}
+        decompresser.end();
+        byte[] result = new byte[resultLength];
+        System.arraycopy(output_buffer, 0, result, 0, resultLength);
+        
+        return result;
+    }
+
     private byte[] getCompressedAndEncryptedData(byte[] key) {
     		if (compressedAndEncrypted != null) {
     			return compressedAndEncrypted;
@@ -138,7 +207,7 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry> {
     		byte[] finalResult = null;
 	    	try {
 	        SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
-	
+
 	        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
 	        SecureRandom randomSecureRandom = new SecureRandom();
 	        byte[] ivBytes = new byte[cipher.getBlockSize()];
@@ -159,6 +228,26 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry> {
 	    	compressedAndEncrypted = finalResult;
 	    	
         return finalResult;
+    }
+    
+    private static byte[] getDecompressedEncrypted(byte[] compressedEncryptedChunk, byte[] key) {
+        SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+            byte[] ivByte = new byte[cipher.getBlockSize()];
+            System.arraycopy(compressedEncryptedChunk, 0, ivByte, 0, ivByte.length);
+
+            IvParameterSpec iv = new IvParameterSpec(ivByte);
+            cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
+            byte[] compressedData = cipher.doFinal(compressedEncryptedChunk, ivByte.length, compressedEncryptedChunk.length - ivByte.length);
+            return getDecompressedData(compressedData);
+        } catch (Exception e) {
+        		System.out.println("Something went wrong when decompressing encrypted data");
+            e.printStackTrace();
+        }
+        
+        return null;
     }
 
     private int curID = -1;

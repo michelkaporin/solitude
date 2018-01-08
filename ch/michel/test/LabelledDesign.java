@@ -69,7 +69,7 @@ public class LabelledDesign {
 				// 1. Benchmark storing chunks in labels
 				// PUT
 				for (Chunk chunk : chunks) {
-					byte[] data = chunk.getData(dr, Optional.of(secretKey));
+					byte[] data = chunk.serialise(dr, Optional.of(secretKey));
 					String spaceName = getLabelName(labels, chunk);
 	
 					boolean success = hd.put(chunk, spaceName, data, false);
@@ -97,7 +97,7 @@ public class LabelledDesign {
 				String spaceName = Utility.getSpaceName(dr, true);
 				for (Chunk plainEntry : plainEntries) {
 					// Insert chunk to the HyperDex space
-					byte[] data = plainEntry.getData(dr, Optional.of(secretKey));
+					byte[] data = plainEntry.serialise(dr, Optional.of(secretKey));
 					boolean success = hd.put(plainEntry, spaceName, data, true);
 					if (!success) {
 						System.out.format("Inserting %s did not succeed\n", plainEntry.getPrimaryAttribute());

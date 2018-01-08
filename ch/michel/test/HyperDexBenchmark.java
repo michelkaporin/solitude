@@ -14,7 +14,7 @@ import ch.michel.DataRepresentation;
 import ch.michel.HyperDex;
 import ch.michel.Utility;
 
-public class Main {
+public class HyperDexBenchmark {
 	private static int experimentReps = 1;
 	private static int maxChunkSize;
 	private static SecretKey secretKey = null;
@@ -39,9 +39,9 @@ public class Main {
 				int totalSizeCompressed = 0;
 				int totalSizeEncrypted = 0;
 				for (Chunk chunk : chunks) {
-					byte[] chunkedData = chunk.getData(DataRepresentation.CHUNKED, null);
-					byte[] cCompressedData = chunk.getData(DataRepresentation.CHUNKED_COMPRESSED, null);
-					byte[] ccEncryptedData = chunk.getData(DataRepresentation.CHUNKED_COMPRESSED_ENCRYPTED,
+					byte[] chunkedData = chunk.serialise(DataRepresentation.CHUNKED, null);
+					byte[] cCompressedData = chunk.serialise(DataRepresentation.CHUNKED_COMPRESSED, null);
+					byte[] ccEncryptedData = chunk.serialise(DataRepresentation.CHUNKED_COMPRESSED_ENCRYPTED,
 							Optional.of(secretKey));
 					totalSizeBase += chunkedData.length;
 					totalSizeCompressed += cCompressedData.length;
@@ -127,7 +127,7 @@ public class Main {
 			}
 		}
 	}
-
+	
 	private static void get(List<Chunk> chunks, HyperDex hd, DataRepresentation representation,
 			boolean twodimensional) {
 		String spaceName = Utility.getSpaceName(representation, twodimensional);
@@ -144,7 +144,7 @@ public class Main {
 		String spaceName = Utility.getSpaceName(representation, twodimensional);
 		for (Chunk chunk : chunks) {
 			// Insert chunk to the HyperDex space
-			byte[] data = chunk.getData(representation, Optional.of(secretKey));
+			byte[] data = chunk.serialise(representation, Optional.of(secretKey));
 			boolean success = hd.put(chunk, spaceName, data, twodimensional);
 			if (!success) {
 				System.out.format("Inserting %s did not succeed\n", chunk.getPrimaryAttribute());

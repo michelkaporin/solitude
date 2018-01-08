@@ -1,8 +1,12 @@
 package ch.michel;
 
+import java.io.InvalidClassException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hyperdex.client.ByteString;
 import org.hyperdex.client.Client;
 import org.hyperdex.client.HyperDexClientException;
 import org.hyperdex.client.Iterator;
@@ -10,7 +14,7 @@ import org.hyperdex.client.Range;
 
 import ch.lubu.Chunk;
 
-public class HyperDex {
+public class HyperDex implements Storage {
 
 	private Client client;
 	private Benchmark benchmark;
@@ -38,7 +42,7 @@ public class HyperDex {
 			return false;
 		}
 
-		attributes.put(DATA_ATTRIBUTE_NAME, new String(data));
+		attributes.put(DATA_ATTRIBUTE_NAME, new ByteString(data));
 		if (twodimensional) {
 			attributes.put(SECOND_ATTRIBUTE_NAME, chunk.secondAttribute); // second attribute
 		}
@@ -55,7 +59,7 @@ public class HyperDex {
 		}
 	}
 
-	public Map<String, Object> get(Chunk chunk, String space) {
+	public Collection<Object> get(Chunk chunk, String space) {
 		Map<String, Object> res = null;
 		long start = System.nanoTime();
 		try {
@@ -66,7 +70,7 @@ public class HyperDex {
 		}
 		benchmark.addGetRequestTime(System.nanoTime() - start);
 
-		return res;
+		return res.values();
 	}
 	
 	public Boolean del(Chunk chunk, String space, boolean twodimensional) {
@@ -130,22 +134,31 @@ public class HyperDex {
 		return null;
 	}
 
-	public Iterator getTempRange(int temp1, int temp2, String space, int rangeLimit) {
+	public Collection<ByteString> getTempRange(int temp1, int temp2, String space, int rangeLimit) {
 		Map<String, Object> predicates = new HashMap<String, Object>();
 		predicates.put(SECOND_ATTRIBUTE_NAME, new Range(Integer.valueOf(temp1), Integer.valueOf(temp2)));
 		
 		int count = 0;
+		Collection<ByteString> results = new ArrayList<ByteString>();
 		long start = System.nanoTime();
 		Iterator it = client.search(space, predicates);
 		try {
 			if (it.hasNext()) {
 				// Two ways to benchmark time: right after hasNext() or go through all elements and then benchmark
 				while (it.hasNext() && count <= rangeLimit) {
-					it.next();
+					Object res = it.next();
+					Map<String, Object> castedRes = null;
+					if (res instanceof Map) {
+						castedRes = ((Map<String, Object>) res);
+					} else {
+						System.out.println("HyperDex returned an instance of unexpected class.");
+						System.exit(1);
+					}
+					results.add((ByteString) castedRes.values().iterator().next());
 					count++;
 				}
 				benchmark.addGetRequestTime(System.nanoTime() - start);
-				return it;
+				return results;
 			} else {
 				System.out.format("No results for the range [%s, %s]", temp1, temp2);
 			}

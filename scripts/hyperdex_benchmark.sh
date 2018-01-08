@@ -29,8 +29,6 @@ fi
 # Run coordinator
 mkdir -p $tempDir/hyperdex_data
 hyperdex coordinator -l 127.0.0.1 -p 1982 -D $tempDir/hyperdex_data &
-coordinatorPID=$!
-echo "PID of the coordinator: $coordinatorPID"
 
 # Run daemons
 for i in $(seq 1 $1)
@@ -51,5 +49,5 @@ javac -classpath $classPath $(find . -name '*.java')
 java -classpath $classPath -Djava.library.path=/usr/local/lib ch/michel/test/Main $2 $3 >> temp/hyperdex_benchmark.log
 popd
 
-# SIGTERM background HyperDex coordinator, daemons terminate themselfes after coordinator is down
-kill -15 $coordinatorPID
+# Terminate all processes matching 'hyperdex' name pattern
+pkill -f hyperdex

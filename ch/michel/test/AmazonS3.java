@@ -46,7 +46,7 @@ public class AmazonS3 {
 			// HYPERDEX
 			// PUT
 			for (Chunk chunk : chunks) {
-				byte[] data = chunk.getData(dr, Optional.of(secretKey));
+				byte[] data = chunk.serialise(dr, Optional.of(secretKey));
 				boolean success = hd.put(chunk, spaceName, data, false);
 				if (!success) {
 					System.out.println("Failed to put chunk " + chunk.getPrimaryAttribute());
@@ -68,7 +68,7 @@ public class AmazonS3 {
 			// AMAZON S3
 			// PUT
 			for (Chunk chunk : chunks) {
-				byte[] data = chunk.getData(dr, Optional.of(secretKey));
+				byte[] data = chunk.serialise(dr, Optional.of(secretKey));
 				s3.put(chunk, bucket, data);
 			}
 

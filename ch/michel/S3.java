@@ -2,6 +2,7 @@ package ch.michel;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -13,12 +14,13 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.util.IOUtils;
 
 import ch.lubu.Chunk;
 
-public class S3 {
+public class S3 implements Storage {
 	private AmazonS3 client;
 	private Benchmark benchmark;
 
@@ -38,7 +40,7 @@ public class S3 {
 		this.benchmark = new Benchmark();
 	}
 	
-	public void put(Chunk chunk, String bucket, byte[] data) {
+	public boolean put(Chunk chunk, String bucket, byte[] data) {
 		byte[] bytes = null;
 		try {
 			bytes = IOUtils.toByteArray(new ByteArrayInputStream(data));
@@ -52,26 +54,33 @@ public class S3 {
 		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
 		
 		long start = System.nanoTime();
-		client.putObject(new PutObjectRequest(bucket, chunk.getPrimaryAttribute(), byteArrayInputStream, metaData)); 
+		try {
+			client.putObject(new PutObjectRequest(bucket, chunk.getPrimaryAttribute(), byteArrayInputStream, metaData));
+		} catch (Exception e) {
+			return false;
+		}
 		benchmark.addPutRequestTime(System.nanoTime() - start);
+		
+		return true;
 	}
 	
-	public S3Object get(Chunk chunk, String bucket) {
+	public byte[] get(Chunk chunk, String bucket) {
 		long start = System.nanoTime();
         S3Object object = client.getObject(new GetObjectRequest(bucket, chunk.getPrimaryAttribute()));
         InputStream objectData = object.getObjectContent();
-        try {
-			processInputStream(objectData);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+        byte[] result = processInputStream(objectData);
 		benchmark.addGetRequestTime(System.nanoTime() - start);
         
-        return object;
+        return result;
 	}
 	
-	public void del(Chunk chunk, String bucket) {
-        client.deleteObject(bucket, chunk.getPrimaryAttribute());
+	public boolean del(Chunk chunk, String bucket) {
+		try {
+			client.deleteObject(bucket, chunk.getPrimaryAttribute());
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
 	}
 	
 	public Benchmark getBenchmark() {
@@ -82,13 +91,21 @@ public class S3 {
 		this.benchmark = new Benchmark();
 	}
 	
-    private  void processInputStream(InputStream input) throws IOException {
-    	// Read one text line at a time and display.
-        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-        while (true) {
-            String line = reader.readLine();
-            if (line == null) break;
-        }
-    }
+    private byte[] processInputStream(InputStream input) {
+    		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+	    	int nRead;
+	    	byte[] data = new byte[16384];
+	    	
+	    	try {
+			while ((nRead = input.read(data, 0, data.length)) != -1) {
+			  buffer.write(data, 0, nRead);
+			}
+			buffer.flush();
+		} catch (IOException e) {
+			System.out.println("Failed to convert S3 object return input stream to byte[].");
+			e.printStackTrace();
+		}
 
+	    	return buffer.toByteArray();
+    }
 }

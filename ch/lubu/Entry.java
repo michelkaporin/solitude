@@ -1,9 +1,8 @@
 package ch.lubu;
 
-/**
- * Created by lukas on 24.02.17.
- */
-public class Entry {
+import java.io.Serializable;
+
+public class Entry implements Serializable {
 
     private long timestamp;
 
