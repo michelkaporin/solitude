@@ -36,7 +36,7 @@ public class Utility {
 			int lowTemp = (Integer) tempToCount.keySet().toArray()[begin];
 			int highTemp = (Integer) tempToCount.keySet().toArray()[end-1];
 
-			labels.add(new Label(String.format("temp_l%s_h%s", lowTemp, highTemp), lowTemp,  highTemp));
+			labels.add(new Label(String.format("templ%sh%s", lowTemp, highTemp), lowTemp,  highTemp));
 			
 			begin += chunksPerLabel;
 			end += chunksPerLabel;

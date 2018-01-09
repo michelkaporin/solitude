@@ -8,6 +8,7 @@ import java.util.Map;
 
 import ch.lubu.AvaDataEntry;
 import ch.lubu.AvaDataImporter;
+import ch.michel.Label;
 
 public class AvaData {
 	public int counter;
@@ -28,6 +29,33 @@ public class AvaData {
 		return this.chunks;
 	}
 	
+	public List<Chunk> getLabelledChunks(int maxBlocksize, Label label) {
+		List<Entry> entries = importEntries();
+		List<Chunk> chunks = new ArrayList<>();
+		
+		Chunk curChunk = Chunk.getNewBlock(maxBlocksize);
+		Entry lastEntry = null;
+
+		for (Entry entry : entries) {
+			if (curChunk.getRemainingSpace() < 1) {
+				curChunk.setPrimaryAttribute(lastEntry.getTimestamp()); // set primary key for the chunk
+				chunks.add(curChunk);
+				curChunk = Chunk.getNewBlock(maxBlocksize);
+			}
+			if (entry.getValue() > label.low && entry.getValue() < label.high) {
+				curChunk.putIotData(entry);
+				lastEntry = entry;
+			}
+		}
+
+		if (curChunk.getNumEntries() > 0) {
+			curChunk.setPrimaryAttribute(lastEntry.getTimestamp()); // set primary key for the chunk
+			chunks.add(curChunk);
+		}
+		
+		return chunks;
+	}
+	
 	private List<Chunk> getTempSkinUniqueChunks(int maxBlocksize) {
 		if (this.tempSkinUniqueChunks == null || cachedBlockSize != maxBlocksize) {
 			this.transferData(maxBlocksize);
@@ -37,35 +65,10 @@ public class AvaData {
 	}
 	
 	private void transferData(int maxBlocksize) {
-		AvaDataImporter importer = null;
 		this.counter = 0;
-		List<Entry> entries = new ArrayList<>();
 
 		// Import entries from CSVs
-		for (int csvIndex = 1; csvIndex <= 10; csvIndex++) {
-			try {
-				importer = new AvaDataImporter("./DATA", csvIndex);
-				while (importer.hasNext()) {
-					AvaDataEntry entry = importer.next();
-					byte[] entryData = String.format("accel_z: %s,activity_index: %s,app_frame_no: %s,"
-							+ "impedance_60kHz: %s,perfusion_index_green: %s,perfusion_index_infrared: %s,"
-							+ "phase_60kHz: %s,rr_quality: %s,sleep_state: %s,temp_amb: %s,", 
-							entry.accel_z, entry.activity_index, entry.app_frame_no, entry.impedance_60kHz, 
-							entry.perfusion_index_green, entry.perfusion_index_infrared, entry.phase_60kHz,
-							entry.rr_quality, entry.sleep_state, entry.temp_amb).getBytes(); // can be stored as JSON instead.
-					entries.add(new Entry(entry.time_stamp, entry.temp_skin, entryData));
-				}
-
-				if (importer != null) {
-					importer.close();
-				}
-				} catch (IOException e) {
-					System.out.println("Ava data was not found.");
-					e.printStackTrace();
-					System.exit(1);
-				}
-				
-			}
+		List<Entry> entries = importEntries();
 			
 		// Transfer data to chunks
 		Chunk curChunk = Chunk.getNewBlock(maxBlocksize);
@@ -89,6 +92,36 @@ public class AvaData {
 		}
 		
 		this.cachedBlockSize = maxBlocksize;
+	}
+
+	private List<Entry> importEntries() {
+		List<Entry> entries = new ArrayList<>();
+		AvaDataImporter importer;
+		for (int csvIndex = 1; csvIndex <= 10; csvIndex++) {
+			try {
+				importer = new AvaDataImporter("./DATA", csvIndex);
+				while (importer.hasNext()) {
+					AvaDataEntry entry = importer.next();
+					byte[] entryData = String.format("accel_z: %s,activity_index: %s,app_frame_no: %s,"
+							+ "impedance_60kHz: %s,perfusion_index_green: %s,perfusion_index_infrared: %s,"
+							+ "phase_60kHz: %s,rr_quality: %s,sleep_state: %s,temp_amb: %s,", 
+							entry.accel_z, entry.activity_index, entry.app_frame_no, entry.impedance_60kHz, 
+							entry.perfusion_index_green, entry.perfusion_index_infrared, entry.phase_60kHz,
+							entry.rr_quality, entry.sleep_state, entry.temp_amb).getBytes(); // can be stored as JSON instead.
+					entries.add(new Entry(entry.time_stamp, entry.temp_skin, entryData));
+				}
+
+				if (importer != null) {
+					importer.close();
+				}
+			} catch (IOException e) {
+				System.out.println("Ava data was not found.");
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
+		
+		return entries;
 	}
 
 	private void addChunk(Chunk curChunk, Map<Integer, Chunk> tempSkinMap, Entry lastEntry) {

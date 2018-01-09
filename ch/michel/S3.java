@@ -6,11 +6,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -90,6 +92,14 @@ public class S3 implements Storage {
 	public void resetBenchmark() {
 		this.benchmark = new Benchmark();
 	}
+    
+    public void createBuckets(List<Label> labels) {
+    		for (Label l : labels) {
+			if (!client.doesBucketExistV2(l.name)) {
+				client.createBucket(l.name);
+			}
+    		}
+    }
 	
     private byte[] processInputStream(InputStream input) {
     		ByteArrayOutputStream buffer = new ByteArrayOutputStream();

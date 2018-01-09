@@ -38,21 +38,7 @@ public class LabelledDesign {
 		List<Label> labels = Utility.getTempLabels(chunks, 3);
 
 		// Create HyperSpaces in HyperDex
-		String spaceNames = concatenateLabelledSpaces(labels);
-		try {
-			Process p = Runtime.getRuntime().exec("python ./scripts/create_spaces.py " + spaceNames);
-			p.waitFor();
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			String line = stdInput.readLine();
-			boolean success = Boolean.parseBoolean(line);
-			if (!success) {
-				System.out.println("Failed to create spaces for labels, success=" + line);
-				System.exit(1);
-			}
-		} catch (IOException | InterruptedException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
+		hd.createSpaces(labels);
 
 		Map<String, Chunk> chunksToDelete = new HashMap<String, Chunk>();
 		Map<String, Chunk> plainEntriesToDelete = new HashMap<String, Chunk>();
@@ -121,18 +107,6 @@ public class LabelledDesign {
 				}
 			}
 		}
-	}
-
-	public static String concatenateLabelledSpaces(List<Label> labels) {
-		String hyperSpaceNames = "";
-		for (int i = 0; i < labels.size(); i++) {
-			hyperSpaceNames += labels.get(i).name;
-			if (labels.size() - i > 1) {
-				hyperSpaceNames += ",";
-			}
-		}
-
-		return hyperSpaceNames;
 	}
 
 	private static String getLabelName(List<Label> labels, Chunk c) {

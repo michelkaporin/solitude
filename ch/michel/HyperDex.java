@@ -1,9 +1,13 @@
 package ch.michel;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.InvalidClassException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.hyperdex.client.ByteString;
@@ -59,18 +63,18 @@ public class HyperDex implements Storage {
 		}
 	}
 
-	public Collection<Object> get(Chunk chunk, String space) {
-		Map<String, Object> res = null;
+	public ByteString get(Chunk chunk, String space) {
+		ByteString res = null;
 		long start = System.nanoTime();
 		try {
-			res = client.get(space, chunk.getPrimaryAttribute());
+			res = (ByteString) client.get(space, chunk.getPrimaryAttribute()).values().iterator().next();
 		} catch (HyperDexClientException e) {
 			System.out.format("Retrieving %s did not succeed\n", chunk.getPrimaryAttribute());
 			e.printStackTrace();
 		}
 		benchmark.addGetRequestTime(System.nanoTime() - start);
 
-		return res.values();
+		return res;
 	}
 	
 	public Boolean del(Chunk chunk, String space, boolean twodimensional) {
@@ -144,7 +148,6 @@ public class HyperDex implements Storage {
 		Iterator it = client.search(space, predicates);
 		try {
 			if (it.hasNext()) {
-				// Two ways to benchmark time: right after hasNext() or go through all elements and then benchmark
 				while (it.hasNext() && count <= rangeLimit) {
 					Object res = it.next();
 					Map<String, Object> castedRes = null;
@@ -170,11 +173,41 @@ public class HyperDex implements Storage {
 		return null;
 	}
 	
+	public void createSpaces(List<Label> labels) {
+		String spaceNames = concatenateLabelledSpaces(labels);
+		try {
+			Process p = Runtime.getRuntime().exec("python ./scripts/create_spaces.py " + spaceNames);
+			p.waitFor();
+			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			String line = stdInput.readLine();
+			boolean success = Boolean.parseBoolean(line);
+			if (!success) {
+				System.out.println("Failed to create spaces for labels, success=" + line);
+				System.exit(1);
+			}
+		} catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
 	public Benchmark getBenchmark() {
 		return this.benchmark;
 	}
 	
 	public void resetBenchmark() {
 		this.benchmark = new Benchmark();
+	}
+	
+	private String concatenateLabelledSpaces(List<Label> labels) {
+		String hyperSpaceNames = "";
+		for (int i = 0; i < labels.size(); i++) {
+			hyperSpaceNames += labels.get(i).name;
+			if (labels.size() - i > 1) {
+				hyperSpaceNames += ",";
+			}
+		}
+
+		return hyperSpaceNames;
 	}
 }

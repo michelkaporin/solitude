@@ -62,31 +62,42 @@ public class MainBenchmark {
 		String hyperdexIP = args[2];
 		String aws_access_key_id = args[3];
 		String aws_secret_access_key = args[4];
-		String bucket = "solitude-baseline";
-
+		
+		/*
+		 * Baseline Design Benchmark
+		 */
 		System.out.println("BASELINE");
-		System.out.format("%s\t%s\t%s\t%s\t%s\t%s\n", "Data Store", "Representation", "PUT", "GET", "Decrypt & Decompress", "Search");
+		System.out.format("%s\t%s\t%s\t%s\t%s\t%s\n", "Data Store", "Representation", "PUT", "GET", "Deserialise, decrypt & Decompress", "Search");
 		AvaData avaData = new AvaData();
 		SecretKey secretKey = Utility.generateSecretKey();
 		List<Chunk> chunks = avaData.getChunks(maxChunkSize, false);
+		List<Chunk> singleEntryChunks = avaData.getChunks(1, false);
 		List<Label> labels = Utility.getTempLabels(chunks, 3); // obtain labels for produced chunks
 
 		HyperDex hd = new HyperDex(hyperdexIP, 1982);
 		S3 s3 = new S3(aws_access_key_id, aws_secret_access_key);
-		
-		Map<String, Chunk> chunksToDelete = new HashMap<String, Chunk>();
+		String bucket = "solitude-baseline";
+
 		for (DataRepresentation dr : dataRepresentations) {
-			// PUT 
+			// PUT in HyperDex
 			String space = Utility.getSpaceName(dr, true);
-			for (Chunk chunk : chunks) {
+			for (Chunk chunk : singleEntryChunks) {
 				byte[] data = chunk.serialise(dr, Optional.of(secretKey));
-				boolean success1 = hd.put(chunk, space, data, true);
-				boolean success2 = s3.put(chunk, bucket, data);
-				if (!success1 || !success2) {
-					System.out.println("Failed to put chunk in either HyperDex or S3" + chunk.getPrimaryAttribute());
+				boolean success = hd.put(chunk, space, data, true);
+				if (!success) {
+					System.out.println("Failed to put chunk in HyperDex" + chunk.getPrimaryAttribute());
 					System.exit(1);
 				}
-				chunksToDelete.put(chunk.getPrimaryAttribute(), chunk);
+			}
+			
+			// PUT in S3
+			for (Chunk chunk : chunks) {
+				byte[] data = chunk.serialise(dr, Optional.of(secretKey));
+				boolean success = s3.put(chunk, bucket, data);
+				if (!success) {
+					System.out.println("Failed to put chunk in S3" + chunk.getPrimaryAttribute());
+					System.exit(1);
+				}
 			}
 			
 			// GET
@@ -130,14 +141,84 @@ public class MainBenchmark {
 			
 			// Clean the state -> DEL items from the store, reset benchmarks
 			// DEL
-			for (Chunk chunk : chunks) {
+			for (Chunk chunk : singleEntryChunks) {
 				hd.del(chunk, space, true);
+			}
+			for (Chunk chunk : chunks) {
 				s3.del(chunk, bucket);
 			}
 			hd.resetBenchmark();
 			s3.resetBenchmark();
 		}
 		
+		/*
+		 * Labelled Design Benchmark
+		 */
+		System.out.println("LABELLED DESIGN");
+		// Chunk entries by their labels
+		List<Chunk> labelledChunks = avaData.getLabelledChunks(maxChunkSize, labels.get(0));
+
+		// Create space and bucket
+		hd = new HyperDex(hyperdexIP, 1982);
+		s3 = new S3(aws_access_key_id, aws_secret_access_key);
+		hd.createSpaces(labels);
+		s3.createBuckets(labels);
+
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		for (DataRepresentation dr : dataRepresentations) {
+			// PUT
+			for (Chunk chunk : labelledChunks) {
+				byte[] data = chunk.serialise(dr, Optional.of(secretKey));
+				boolean success1 = hd.put(chunk, labels.get(0).name, data, false);
+				boolean success2 = s3.put(chunk, labels.get(0).name, data);
+				if (!success1 || !success2) {
+					System.out.println("Failed to put chunk in HyperDex" + chunk.getPrimaryAttribute());
+					System.exit(1);
+				}
+			}
+			
+			// GET
+			Collection<ByteString> hdResults = new ArrayList<>();
+			Collection<byte[]> s3Results = new ArrayList<>();
+			for (Chunk chunk: labelledChunks) {
+				hdResults.add(hd.get(chunk, labels.get(0).name));
+				s3Results.add(s3.get(chunk, labels.get(0).name));
+			}
+			
+			// Deserialise, decrypt and decompress
+			long start = System.nanoTime();
+			for (ByteString res: hdResults) {
+				Chunk.deserialise(dr, res.getBytes(), Optional.of(secretKey));
+				
+			}
+			long hdDecodeElapsed = (System.nanoTime() - start)/1000000; // maybe more detailed breakdown for decompression and decryption?
+
+			start = System.nanoTime();
+			for (byte[] res: s3Results) {
+				Chunk.deserialise(dr, res, Optional.of(secretKey));
+			}
+			long s3DecodeElapsed = (System.nanoTime() - start)/1000000;
+			
+			printStats("HyperDex", dr, hd.getBenchmark().avgPut(), hd.getBenchmark().avgGet(), hdDecodeElapsed, 0); // hyperdex
+			printStats("S3", dr, s3.getBenchmark().avgPut(), s3.getBenchmark().avgGet(), s3DecodeElapsed, 0); // s3
+			
+
+			// Clean the state -> DEL items from the store, reset benchmarks
+			// DEL
+			for (Chunk chunk : singleEntryChunks) {
+				hd.del(chunk, labels.get(0).name, false);
+			}
+			for (Chunk chunk : chunks) {
+				s3.del(chunk, labels.get(0).name);
+			}
+			hd.resetBenchmark();
+			s3.resetBenchmark();
+		}
 	}
 
 	private static void printStats(String datastore, DataRepresentation dr, double avgPut, double avgGet, double avgDecode, double avgSearch) {
