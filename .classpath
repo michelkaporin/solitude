@@ -37,7 +37,13 @@
 	<classpathentry kind="lib" path="lib/aws-sdk/third-party/lib/spring-core-3.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/aws-sdk/third-party/lib/spring-test-3.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="/usr/local/share/java/org.hyperdex.client-1.8.1.jar" sourcepath="/Users/michel/Downloads/hyperdex-install/hyperdex-1.8.1/bindings/java"/>
-	<classpathentry kind="lib" path="lib/cassandra-driver-core-3.3.2.jar"/>
-	<classpathentry kind="lib" path="lib/guava-19.0.jar"/>
+	<classpathentry kind="lib" path="lib/cassandra/cassandra-driver-core-3.3.2.jar"/>
+	<classpathentry kind="lib" path="lib/cassandra/lib/netty-handler-4.0.47.Final.jar"/>
+	<classpathentry kind="lib" path="lib/cassandra/lib/metrics-core-3.2.2.jar"/>
+	<classpathentry kind="lib" path="lib/cassandra/lib/slf4j-api-1.7.25.jar"/>
+	<classpathentry kind="lib" path="lib/cassandra/lib/HdrHistogram-2.1.9.jar"/>
+	<classpathentry kind="lib" path="lib/cassandra/lib/jnr-posix-3.0.27.jar"/>
+	<classpathentry kind="lib" path="lib/cassandra/lib/jnr-ffi-2.0.7.jar"/>
+	<classpathentry kind="lib" path="lib/cassandra/lib/guava-19.0.jar"/>
 	<classpathentry kind="output" path=""/>
 </classpath>

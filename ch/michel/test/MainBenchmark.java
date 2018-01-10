@@ -64,6 +64,8 @@ public class MainBenchmark {
 		String aws_access_key_id = args[3];
 		String aws_secret_access_key = args[4];
 		String cassandraIP = args[5];
+		int hyperdexPort = 1982;
+		int cassandraPort = 9042;
 		
 		/*
 		 * Baseline Design Benchmark
@@ -76,10 +78,12 @@ public class MainBenchmark {
 		List<Chunk> singleEntryChunks = avaData.getChunks(1, false);
 		List<Label> labels = Utility.getTempLabels(chunks, 3); // obtain labels for produced chunks
 
-		HyperDex hd = new HyperDex(hyperdexIP, 1982);
+		HyperDex hd = new HyperDex(hyperdexIP, hyperdexPort);
 		S3 s3 = new S3(aws_access_key_id, aws_secret_access_key);
-		Cassandra cass = new Cassandra(cassandraIP, 9142);
+		Cassandra cass = new Cassandra(cassandraIP, cassandraPort);
 		String bucket = "solitude-baseline";
+		String cassandraTable = "baseline";
+		cass.createTable(cassandraTable);
 
 		for (DataRepresentation dr : dataRepresentations) {
 			// PUT in HyperDex
@@ -106,7 +110,7 @@ public class MainBenchmark {
 			// PUT in Cassandra
 			for (Chunk chunk : chunks) {
 				byte[] data = chunk.serialise(dr, Optional.of(secretKey));
-				boolean success = cass.put(chunk, bucket, data);
+				boolean success = cass.put(chunk, cassandraTable, data);
 				if (!success) {
 					System.out.println("Failed to put chunk in Cassandra" + chunk.getPrimaryAttribute());
 					System.exit(1);
@@ -124,7 +128,7 @@ public class MainBenchmark {
 			}
 			
 			// 2. Cassandra GET
-			Collection<byte[]> cassResults = cass.getAll(bucket);
+			Collection<byte[]> cassResults = cass.getAll(cassandraTable);
 			
 			// Deserialise, decompress & decrypt if needed
 			// 1. HyperDex Objects
@@ -164,7 +168,7 @@ public class MainBenchmark {
 			}
 			for (Chunk chunk : chunks) {
 				s3.del(chunk, bucket);
-				cass.del(chunk, bucket);
+				cass.del(chunk, cassandraTable);
 			}
 			hd.resetBenchmark();
 			s3.resetBenchmark();
@@ -174,65 +178,81 @@ public class MainBenchmark {
 		/*
 		 * Labelled Design Benchmark
 		 */
-//		System.out.println("LABELLED DESIGN");
-//		// Chunk entries by their labels
-//		List<Chunk> labelledChunks = avaData.getLabelledChunks(maxChunkSize, labels.get(0));
-//
-//		// Create space and bucket
-//		hd = new HyperDex(hyperdexIP, 1982);
-//		s3 = new S3(aws_access_key_id, aws_secret_access_key);
-//		hd.createSpaces(labels);
-//		s3.createBuckets(labels);
-//
-//		for (DataRepresentation dr : dataRepresentations) {
-//			// PUT
-//			for (Chunk chunk : labelledChunks) {
-//				byte[] data = chunk.serialise(dr, Optional.of(secretKey));
-//				boolean success1 = hd.put(chunk, labels.get(0).name, data, false);
-//				boolean success2 = s3.put(chunk, labels.get(0).name, data);
-//				if (!success1 || !success2) {
-//					System.out.println("Failed to put chunk in HyperDex" + chunk.getPrimaryAttribute());
-//					System.exit(1);
-//				}
-//			}
-//			
-//			// GET
-//			Collection<ByteString> hdResults = new ArrayList<>();
-//			Collection<byte[]> s3Results = new ArrayList<>();
-//			for (Chunk chunk: labelledChunks) {
-//				hdResults.add(hd.get(chunk, labels.get(0).name));
-//				s3Results.add(s3.get(chunk, labels.get(0).name));
-//			}
-//			
-//			// Deserialise, decrypt and decompress
-//			long start = System.nanoTime();
-//			for (ByteString res: hdResults) {
-//				Chunk.deserialise(dr, res.getBytes(), Optional.of(secretKey));
-//				
-//			}
-//			long hdDecodeElapsed = (System.nanoTime() - start)/1000000; // maybe more detailed breakdown for decompression and decryption?
-//
-//			start = System.nanoTime();
-//			for (byte[] res: s3Results) {
-//				Chunk.deserialise(dr, res, Optional.of(secretKey));
-//			}
-//			long s3DecodeElapsed = (System.nanoTime() - start)/1000000;
-//			
-//			printStats("HyperDex", dr, hd.getBenchmark().avgPut(), hd.getBenchmark().avgGet(), hdDecodeElapsed, 0); // hyperdex
-//			printStats("S3", dr, s3.getBenchmark().avgPut(), s3.getBenchmark().avgGet(), s3DecodeElapsed, 0); // s3
-//			
-//
-//			// Clean the state -> DEL items from the store, reset benchmarks
-//			// DEL
-//			for (Chunk chunk : singleEntryChunks) {
-//				hd.del(chunk, labels.get(0).name, false);
-//			}
-//			for (Chunk chunk : chunks) {
-//				s3.del(chunk, labels.get(0).name);
-//			}
-//			hd.resetBenchmark();
-//			s3.resetBenchmark();
+		System.out.println("LABELLED DESIGN");
+		// Chunk entries by their labels
+		List<Chunk> labelledChunks = avaData.getLabelledChunks(maxChunkSize, labels.get(0));
+
+		// Create space and bucket
+		hd = new HyperDex(hyperdexIP, hyperdexPort);
+		s3 = new S3(aws_access_key_id, aws_secret_access_key);
+		cass = new Cassandra(cassandraIP, cassandraPort);
+		hd.createSpaces(labels);
+		s3.createBuckets(labels);
+		cass.createTables(labels);
+
+		for (DataRepresentation dr : dataRepresentations) {
+			// PUT
+			for (Chunk chunk : labelledChunks) {
+				byte[] data = chunk.serialise(dr, Optional.of(secretKey));
+				boolean success1 = hd.put(chunk, labels.get(0).name, data, false);
+				boolean success2 = s3.put(chunk, labels.get(0).name, data);
+				boolean success3 = cass.put(chunk, labels.get(0).name, data);
+				if (!success1 || !success2 || !success3) {
+					System.out.println("Failed to put chunk in HyperDex, S3 or Cassandra" + chunk.getPrimaryAttribute());
+					System.exit(1);
+				}
+			}
+			
+			// GET
+			Collection<ByteString> hdResults = new ArrayList<>();
+			Collection<byte[]> s3Results = new ArrayList<>();
+			Collection<byte[]> cassResults;
+			for (Chunk chunk: labelledChunks) {
+				hdResults.add(hd.get(chunk, labels.get(0).name));
+				s3Results.add(s3.get(chunk, labels.get(0).name));
+			}
+			cassResults = cass.getAll(labels.get(0).name);
+			
+			// Deserialise, decrypt and decompress
+			long start = System.nanoTime();
+			for (ByteString res: hdResults) {
+				Chunk.deserialise(dr, res.getBytes(), Optional.of(secretKey));
+				
+			}
+			long hdDecodeElapsed = (System.nanoTime() - start)/1000000; // maybe more detailed breakdown for decompression and decryption?
+
+			start = System.nanoTime();
+			for (byte[] res: s3Results) {
+				Chunk.deserialise(dr, res, Optional.of(secretKey));
+			}
+			long s3DecodeElapsed = (System.nanoTime() - start)/1000000;
+
+			start = System.nanoTime();
+			for (byte[] res: cassResults) {
+				Chunk.deserialise(dr, res, Optional.of(secretKey));
+			}
+			long cassDecodeElapsed = (System.nanoTime() - start)/1000000;
+			
+			printStats("HyperDex", dr, hd.getBenchmark().avgPut(), hd.getBenchmark().avgGet(), hdDecodeElapsed, 0);
+			printStats("S3", dr, s3.getBenchmark().avgPut(), s3.getBenchmark().avgGet(), s3DecodeElapsed, 0); 
+			printStats("Cassandra", dr, cass.getBenchmark().avgPut(), cass.getBenchmark().avgGet(), cassDecodeElapsed, 0);
+
+			// Clean the state -> DEL items from the store, reset benchmarks
+			// DEL
+			for (Chunk chunk : singleEntryChunks) {
+				hd.del(chunk, labels.get(0).name, false);
+			}
+			for (Chunk chunk : chunks) {
+				s3.del(chunk, labels.get(0).name);
+			}
+			for (Chunk chunk : chunks) {
+				cass.del(chunk, labels.get(0).name);
+			}
+			hd.resetBenchmark();
+			s3.resetBenchmark();
+			cass.resetBenchmark();
 		}
+	}
 
 	private static Collection<Chunk> searchRange(SecretKey secretKey, List<Label> labels, DataRepresentation dr, Collection<byte[]> results) {
 		Collection<Chunk> chunksInRange = new ArrayList<>();
