@@ -11,6 +11,11 @@ public class Benchmark {
 		this.getTime += elapsed;
 		this.getCount += 1;
 	}
+
+	public void addGetRequestTime(long elapsed, int count) {
+		this.getTime += elapsed;
+		this.getCount += count;
+	}
 	
 	public void addPutRequestTime(long elapsed) {
 		this.putTime += elapsed;

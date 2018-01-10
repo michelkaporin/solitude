@@ -37,5 +37,7 @@
 	<classpathentry kind="lib" path="lib/aws-sdk/third-party/lib/spring-core-3.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/aws-sdk/third-party/lib/spring-test-3.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="/usr/local/share/java/org.hyperdex.client-1.8.1.jar" sourcepath="/Users/michel/Downloads/hyperdex-install/hyperdex-1.8.1/bindings/java"/>
+	<classpathentry kind="lib" path="lib/cassandra-driver-core-3.3.2.jar"/>
+	<classpathentry kind="lib" path="lib/guava-19.0.jar"/>
 	<classpathentry kind="output" path=""/>
 </classpath>
