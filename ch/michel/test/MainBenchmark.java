@@ -85,6 +85,7 @@ public class MainBenchmark {
 			String bucket = "solitude-baseline";
 			String cassandraTable = "baseline";
 			cass.createTable(cassandraTable);
+			cass.delAll(cassandraTable); // wipe the table if any records left from previous executions
 	
 			for (DataRepresentation dr : dataRepresentations) {
 				// PUT in HyperDex
@@ -134,21 +135,21 @@ public class MainBenchmark {
 				// Deserialise, decompress & decrypt if needed
 				// 1. HyperDex Objects
 				long start = System.nanoTime();
-				for (ByteString res: hdResults) {
+				for (ByteString res : hdResults) {
 					Chunk.deserialise(dr, res.getBytes(), Optional.of(secretKey));
 				}
 				long hdDecodeElapsed = (System.nanoTime() - start)/1000000; // maybe more detailed breakdown for decompression and decryption?
 	
 				// 2. S3 Objects: retrieve all of them
 				start = System.nanoTime();
-				for (byte[] res: s3Results) {
+				for (byte[] res : s3Results) {
 					Chunk.deserialise(dr, res, Optional.of(secretKey));
 				}
 				long s3DecodeElapsed = (System.nanoTime() - start)/1000000;
 				
 				// 2. Cassandra: retrieve all of them
 				start = System.nanoTime();
-				for (byte[] res: cassResults) {
+				for (byte[] res : cassResults) {
 					Chunk.deserialise(dr, res, Optional.of(secretKey));
 				}
 				long cassDecodeElapsed = (System.nanoTime() - start)/1000000;
@@ -190,6 +191,7 @@ public class MainBenchmark {
 			hd.createSpaces(labels);
 			s3.createBuckets(labels);
 			cass.createTables(labels);
+			cass.deleteTableRecords(labels);
 	
 			for (DataRepresentation dr : dataRepresentations) {
 				// PUT

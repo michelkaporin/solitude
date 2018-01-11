@@ -80,15 +80,12 @@ public class Cassandra implements Storage {
 	
 	    	rs.forEach(r -> {
 	    		ByteBuffer buffer = r.getBytes("value");
-	    		byte[] res = new byte[buffer.remaining()];
-	    		buffer.get(res);
-	    		chunks.add(res);
+	    		chunks.add(buffer.array());
 	    	});
 		benchmark.addGetRequestTime(System.nanoTime() - start);
 	    	
 		return chunks;
     	}
-    
 
     public boolean del(Chunk chunk, String table) {
     		String stm = String.format("DELETE FROM %s.%s WHERE key = '%s'", KEYSPACE, table, chunk.getPrimaryAttribute());
@@ -101,6 +98,11 @@ public class Cassandra implements Storage {
     		
 		return true;
     	}
+    
+    public void delAll(String table) {
+    		String stm = String.format("TRUNCATE %s.%s", KEYSPACE, table);
+    		session.execute(stm);
+    }
     
     public void createKeyspace(int replicationFactor) {
 			StringBuilder sb = new StringBuilder("CREATE KEYSPACE IF NOT EXISTS ")
@@ -136,6 +138,11 @@ public class Cassandra implements Storage {
 	public void createTables(List<Label> labels) {
 		for (Label label : labels) {
 			this.createTable(label.name);
+		}
+	}
+	public void deleteTableRecords(List<Label> labels) {
+		for (Label label : labels) {
+			this.delAll(label.name);
 		}
 	}
 }
