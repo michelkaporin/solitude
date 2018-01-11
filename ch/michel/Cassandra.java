@@ -8,7 +8,6 @@ import java.util.List;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Cluster.Builder;
-import com.datastax.driver.core.policies.DCAwareRoundRobinPolicy;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
@@ -32,7 +31,7 @@ public class Cassandra implements Storage {
 	}
 	
 	public void connect(String node, int port) {
-        Builder b = Cluster.builder().addContactPoint(node).withPort(port).withLoadBalancingPolicy(DCAwareRoundRobinPolicy.builder().withLocalDc("datacenter1").build());
+        Builder b = Cluster.builder().addContactPoint(node).withPort(port);
         this.cluster = b.build();
         try {
         		this.session = cluster.connect();
