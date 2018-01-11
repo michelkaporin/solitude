@@ -18,10 +18,14 @@ public class HyperDexBenchmark {
 	private static int experimentReps = 1;
 	private static int maxChunkSize;
 	private static SecretKey secretKey = null;
+	private static boolean testRange = false;
+	private static boolean testRangeEntryByEntry = false;
 
 	public static void main(String[] args) {
 		maxChunkSize = Integer.valueOf(args[0]);
 		experimentReps = Integer.valueOf(args[1]); // Fix HyperDex repetition amount for statistical confidence
+		testRange = Boolean.valueOf(args[2]);
+		testRangeEntryByEntry = Boolean.valueOf(args[3]);
 
 		int[] maxBlockSize = { 1, maxChunkSize }; // Fix the block size per chunk
 		boolean[] twoDimensions = { false, true }; // First run the retrieval from the key (single dimension), then over
@@ -94,8 +98,15 @@ public class HyperDexBenchmark {
 			System.out.format("[%s]\t%s\t%s\n", currentBlockSize, hd.getBenchmark().avgPut(),
 					hd.getBenchmark().avgGet()); // Print PUT and GET average times
 
-			// Range GET: prove that chunking is better than issuing range retrieval requests
-			getRange(currentBlockSize, chunks, hd, representation, twodimensional);
+			if (testRange) {
+				// Range GET: prove that chunking is better than issuing range retrieval requests
+				getRange(currentBlockSize, chunks, hd, representation, twodimensional);
+			}
+
+			if (testRangeEntryByEntry) {
+				// Single entries GETs: show at which latency the amount of GETs reaches the latency of retrieving single chunk
+				getRangeEntryByEntry(currentBlockSize, chunks, hd, representation, twodimensional);
+			}
 
 			// DEL
 			del(hd, representation, twodimensional, chunksToDelete);
@@ -123,7 +134,24 @@ public class HyperDexBenchmark {
 				Chunk c1 = chunks.get(0);
 				Chunk c2 = chunks.get(j);
 				hd.getRange(c1, c2, spaceName);
-				System.out.format("[0..%s]\t%s\n", j, hd.getBenchmark().avgGet()); // Print PUT and GET average times
+				System.out.format("[0..%s]\t%s\n", j, hd.getBenchmark().avgGet());
+			}
+		}
+	}
+
+	private static void getRangeEntryByEntry(int currentBlockSize, List<Chunk> chunks, HyperDex hd,
+			DataRepresentation representation, boolean twodimensional) {
+		if (!twodimensional && currentBlockSize == 1) {
+			String spaceName = Utility.getSpaceName(representation, false);
+			
+			for (int i = 1; i < maxChunkSize; i++) {
+				long start = System.nanoTime();
+				for (int j = 0; j < i; j++) {
+					Chunk c = chunks.get(j);
+					hd.get(c, spaceName);
+				}
+				long retrievalElapsed = (System.nanoTime() - start)/1000000;
+				System.out.format("[0..%s]\t%s\n", i, retrievalElapsed);
 			}
 		}
 	}

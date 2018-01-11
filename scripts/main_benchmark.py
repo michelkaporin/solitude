@@ -1,4 +1,5 @@
 import sys
+import time
 from fabric.api import *
 
 # Configuration
@@ -91,5 +92,6 @@ execute(start_cassandra, hosts=[COORDINATOR])
 print 'Starting Cassandra non-seed nodes'
 execute(start_cassandra, hosts=DAEMONS)
 
+time.sleep(60) # Give time for the datastores to spin up
 print 'Running experiment'
 execute(start_experiment, sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], hosts=[EXPERIMENT])

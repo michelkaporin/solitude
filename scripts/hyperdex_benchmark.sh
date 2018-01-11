@@ -4,6 +4,8 @@
 #   Server number: $1
 #   Chunk size: $2
 #   Repetitions number: $3
+#   Test Range : $4
+#   Test Range Entry-by-Entry: $5
 
 # Resolve the relative path because of https://github.com/rescrv/HyperDex/issues/216
 if [ $(uname -s) == Linux ]
@@ -46,7 +48,7 @@ python setup_spaces.py 127.0.0.1
 pushd ..
 classPath='.:/usr/local/share/java/org.hyperdex.client-1.8.1.jar'
 javac -classpath $classPath $(find . -name '*.java')
-java -classpath $classPath -Djava.library.path=/usr/local/lib ch/michel/test/Main $2 $3 >> temp/hyperdex_benchmark.log
+java -classpath $classPath -Djava.library.path=/usr/local/lib ch/michel/test/Main $2 $3 $4 $5 >> temp/hyperdex_benchmark.log
 popd
 
 # Terminate all processes matching 'hyperdex' name pattern
