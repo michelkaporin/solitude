@@ -1,6 +1,7 @@
 import sys
 import time
 from fabric.api import *
+from fabric.colors import green
 
 # Configuration
 USER = 'ubuntu'
@@ -74,24 +75,24 @@ def start_experiment(chunk_size, repetitions_num, aws_access_key_id, aws_secret_
 # 2. Connect to daemons, run hyperdex daemons
 # 3. Connect to machine that will run an experiment, run java
 
-print 'Wiping previous execution state'
+print green('Wiping previous execution state')
 execute(wipe_state, hosts=ALL_HOSTS)
 
-print 'Starting HyperDex coordinator'
+print green('Starting HyperDex coordinator')
 execute(start_coordinator, hosts=[COORDINATOR])
 
-print 'Setting HyperDex up spaces'
+print green('Setting HyperDex up spaces')
 execute(setup_spaces, hosts=[COORDINATOR])
 
-print 'Starting HyperDex daemons'
+print green('Starting HyperDex daemons')
 execute(start_daemon, hosts=DAEMONS)
 
-print 'Starting Cassandra seed nodes'
+print green('Starting Cassandra seed nodes')
 execute(start_cassandra, hosts=[COORDINATOR])
 
-print 'Starting Cassandra non-seed nodes'
+print green('Starting Cassandra non-seed nodes')
 execute(start_cassandra, hosts=DAEMONS)
 
 time.sleep(60) # Give time for the datastores to spin up
-print 'Running experiment'
+print green('Running experiment')
 execute(start_experiment, sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], hosts=[EXPERIMENT])

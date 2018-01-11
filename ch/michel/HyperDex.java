@@ -22,7 +22,9 @@ public class HyperDex implements Storage {
 
 	private Client client;
 	private Benchmark benchmark;
-
+	
+	private String ip;
+	
 	private static String DEFAULT_IP = "127.0.0.1";
 	private static int DEFAULT_PORT = 1982;
 	private static String DATA_ATTRIBUTE_NAME = "data";
@@ -31,11 +33,13 @@ public class HyperDex implements Storage {
 
 	public HyperDex() {
 		this.client = new Client(DEFAULT_IP, DEFAULT_PORT);
+		this.ip = DEFAULT_IP;
 		this.benchmark = new Benchmark();
 	}
 
 	public HyperDex(String ip, int port) {
 		this.client = new Client(ip, port);
+		this.ip = ip;
 		this.benchmark = new Benchmark();
 	}
 
@@ -176,7 +180,7 @@ public class HyperDex implements Storage {
 	public void createSpaces(List<Label> labels) {
 		String spaceNames = concatenateLabelledSpaces(labels);
 		try {
-			Process p = Runtime.getRuntime().exec("python ./scripts/create_spaces.py " + spaceNames);
+			Process p = Runtime.getRuntime().exec(String.format("python ./scripts/create_spaces.py %s %s", this.ip, spaceNames));
 			p.waitFor();
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			String line = stdInput.readLine();
