@@ -18,7 +18,7 @@ DAEMON2 = '{}@{}:22'.format(USER, DAEMON2_IP)
 DAEMON3 = '{}@{}:22'.format(USER, DAEMON3_IP)
 DAEMON4 = '{}@{}:22'.format(USER, DAEMON4_IP)
 COORDINATOR = '{}@{}:22'.format(USER, COORDINATOR_IP)
-EXPERIMENT = '{}@{}:22'.format(USER, COORDINATOR_IP)
+EXPERIMENT = '{}@{}:22'.format(USER, EXPERIMENT_IP)
 
 DAEMONS = [DAEMON1, DAEMON2, DAEMON3, DAEMON4]
 ALL_HOSTS = DAEMONS+[COORDINATOR, EXPERIMENT]
@@ -55,12 +55,13 @@ def setup_spaces():
     command = 'python ~/solitude/scripts/setup_spaces.py {}'.format(COORDINATOR_IP)
     run(command)
 
+@parallel
 def start_cassandra():
     command = 'sudo service cassandra start'
     run (command)
 
 def start_experiment(chunk_size, repetitions_num, aws_access_key_id, aws_secret_access_key):
-    class_path = '.:/usr/local/share/java/org.hyperdex.client-1.8.1.jar:lib/aws-sdk/lib/aws-java-sdk-1.11.255.jar:lib/aws-sdk/third-party/lib/*:lib/cassandra/cassandra-driver-core-3.3.2.jar:lib/cassandra/lib/cass*'
+    class_path = '.:/usr/local/share/java/org.hyperdex.client-1.8.1.jar:lib/aws-sdk/lib/aws-java-sdk-1.11.255.jar:lib/aws-sdk/third-party/lib/*:lib/cassandra/cassandra-driver-core-3.3.2.jar:lib/cassandra/lib/*'
     command = 'cd ~/solitude && javac -classpath "{}" $(find . -name \'*.java\')'.format(class_path)
     run(command)
 
