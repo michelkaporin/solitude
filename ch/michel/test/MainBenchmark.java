@@ -86,7 +86,7 @@ public class MainBenchmark {
 			cass.delAll(cassandraTable); // wipe the table if any records left from previous executions
 	
 			for (DataRepresentation dr : dataRepresentations) {
-				// PUT in HyperDex
+				// PUT single entries in HyperDex (does not make sense putting chunks because no way to identify a chunk grouped by time with the second dimension)
 				String space = Utility.getSpaceName(dr, true);
 				for (Chunk chunk : singleEntryChunks) {
 					byte[] data = chunk.serialise(dr, Optional.of(secretKey));
@@ -100,39 +100,32 @@ public class MainBenchmark {
 				// PUT in S3
 				for (Chunk chunk : chunks) {
 					byte[] data = chunk.serialise(dr, Optional.of(secretKey));
-					boolean success = s3.put(chunk, bucket, data);
-					if (!success) {
-						System.out.println("Failed to put chunk in S3" + chunk.getPrimaryAttribute());
-						System.exit(1);
-					}
-				}
-				
-				// PUT in Cassandra
-				for (Chunk chunk : chunks) {
-					byte[] data = chunk.serialise(dr, Optional.of(secretKey));
-					boolean success = cass.put(chunk, cassandraTable, data);
-					if (!success) {
-						System.out.println("Failed to put chunk in Cassandra" + chunk.getPrimaryAttribute());
+					boolean success1 = s3.put(chunk, bucket, data);
+					boolean success2 = cass.put(chunk, cassandraTable, data);
+					if (!success1 || !success2) {
+						System.out.println("Failed to put chunk in S3 or in Cassandra" + chunk.getPrimaryAttribute());
 						System.exit(1);
 					}
 				}
 				
 				// GET
 				// 1. HyperDex GET
-				Collection<ByteString> hdResults = hd.getTempRange(labels.get(0).low, labels.get(0).high, space, chunks.size());
-	
+				Collection<ByteString> hdResults = hd.getTempRange(labels.get(0).low, labels.get(0).high, space, singleEntryChunks.size());
+
 				// 2. S3 GET
 				Collection<byte[]> s3Results = new ArrayList<byte[]>();
+				long start = System.nanoTime();
 				for (Chunk chunk : chunks) {
 					s3Results.add(s3.get(chunk, bucket));
 				}
+				long s3GetAllElapsed = (System.nanoTime() - start)/1000000;
 				
 				// 2. Cassandra GET
 				Collection<byte[]> cassResults = cass.getAll(cassandraTable);
 				
 				// Deserialise, decompress & decrypt if needed
 				// 1. HyperDex Objects
-				long start = System.nanoTime();
+				start = System.nanoTime();
 				for (ByteString res : hdResults) {
 					Chunk.deserialise(dr, res.getBytes(), Optional.of(secretKey));
 				}
@@ -158,7 +151,7 @@ public class MainBenchmark {
 				long avgSearch = (System.nanoTime() - start)/1000000;
 	
 				printStats("HyperDex", dr, hd.getBenchmark().avgPut(), hd.getBenchmark().avgGet(), hdDecodeElapsed, 0);
-				printStats("S3", dr, s3.getBenchmark().avgPut(), s3.getBenchmark().avgGet(), s3DecodeElapsed, avgSearch);
+				printStats("S3", dr, s3.getBenchmark().avgPut(), s3GetAllElapsed, s3DecodeElapsed, avgSearch);
 				printStats("Cassandra", dr, cass.getBenchmark().avgPut(), cass.getBenchmark().avgGet(), cassDecodeElapsed, avgSearch);
 				
 				// Clean the state -> DEL items from the store, reset benchmarks
@@ -208,17 +201,25 @@ public class MainBenchmark {
 				Collection<ByteString> hdResults = new ArrayList<>();
 				Collection<byte[]> s3Results = new ArrayList<>();
 				Collection<byte[]> cassResults;
-				for (Chunk chunk: labelledChunks) {
+				
+				long start = System.nanoTime();
+				for (Chunk chunk : labelledChunks) {
 					hdResults.add(hd.get(chunk, labels.get(0).name));
+				}
+				long hdGetAllElapsed = (System.nanoTime() - start)/1000000;
+				
+				start = System.nanoTime();
+				for (Chunk chunk: labelledChunks) {
 					s3Results.add(s3.get(chunk, labels.get(0).name));
 				}
+				long s3GetAllElapsed = (System.nanoTime() - start)/1000000;
+				
 				cassResults = cass.getAll(labels.get(0).name);
 				
 				// Deserialise, decrypt and decompress
-				long start = System.nanoTime();
+				start = System.nanoTime();
 				for (ByteString res: hdResults) {
 					Chunk.deserialise(dr, res.getBytes(), Optional.of(secretKey));
-					
 				}
 				long hdDecodeElapsed = (System.nanoTime() - start)/1000000; // maybe more detailed breakdown for decompression and decryption?
 	
@@ -234,8 +235,8 @@ public class MainBenchmark {
 				}
 				long cassDecodeElapsed = (System.nanoTime() - start)/1000000;
 				
-				printStats("HyperDex", dr, hd.getBenchmark().avgPut(), hd.getBenchmark().avgGet(), hdDecodeElapsed, 0);
-				printStats("S3", dr, s3.getBenchmark().avgPut(), s3.getBenchmark().avgGet(), s3DecodeElapsed, 0); 
+				printStats("HyperDex", dr, hd.getBenchmark().avgPut(), hdGetAllElapsed, hdDecodeElapsed, 0);
+				printStats("S3", dr, s3.getBenchmark().avgPut(), s3GetAllElapsed, s3DecodeElapsed, 0); 
 				printStats("Cassandra", dr, cass.getBenchmark().avgPut(), cass.getBenchmark().avgGet(), cassDecodeElapsed, 0);
 	
 				// Clean the state -> DEL items from the store, reset benchmarks
