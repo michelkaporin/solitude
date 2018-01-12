@@ -65,26 +65,33 @@ public class MainBenchmark {
 		int hyperdexPort = 1982;
 		int cassandraPort = 9042;
 		
+		// Setup phase
+		AvaData avaData = new AvaData();
+		SecretKey secretKey = Utility.generateSecretKey();
+		List<Chunk> chunks = avaData.getChunks(maxChunkSize, false);
+		List<Chunk> singleEntryChunks = avaData.getChunks(1, false);
+		List<Label> labels = Utility.getTempLabels(chunks, 3); // obtain labels for produced chunks
+		
+		HyperDex hd = new HyperDex(hyperdexIP, hyperdexPort);
+		S3 s3 = new S3(aws_access_key_id, aws_secret_access_key);
+		Cassandra cass = new Cassandra(cassandraIP, cassandraPort);
+		String bucket = "solitude-baseline";
+		String cassandraTable = "baseline";
+		
+		hd.createSpaces(labels);
+		s3.createBuckets(labels);		
+		cass.createTable(cassandraTable);
+		cass.delAll(cassandraTable); // wipe the table if any records left from previous executions
+		cass.createTables(labels);
+		cass.deleteTableRecords(labels);
+
 		for (int i = 0; i < experimentReps; i++) {
 			/*
 			 * Baseline Design Benchmark
 			 */
 			System.out.println("BASELINE");
 			System.out.format("%s\t%s\t%s\t%s\t%s\t%s\n", "Data Store", "Representation", "PUT", "GET", "Deserialise, decrypt & Decompress", "Search");
-			AvaData avaData = new AvaData();
-			SecretKey secretKey = Utility.generateSecretKey();
-			List<Chunk> chunks = avaData.getChunks(maxChunkSize, false);
-			List<Chunk> singleEntryChunks = avaData.getChunks(1, false);
-			List<Label> labels = Utility.getTempLabels(chunks, 3); // obtain labels for produced chunks
-	
-			HyperDex hd = new HyperDex(hyperdexIP, hyperdexPort);
-			S3 s3 = new S3(aws_access_key_id, aws_secret_access_key);
-			Cassandra cass = new Cassandra(cassandraIP, cassandraPort);
-			String bucket = "solitude-baseline";
-			String cassandraTable = "baseline";
-			cass.createTable(cassandraTable);
-			cass.delAll(cassandraTable); // wipe the table if any records left from previous executions
-	
+		
 			for (DataRepresentation dr : dataRepresentations) {
 				// PUT single entries in HyperDex (does not make sense putting chunks because no way to identify a chunk grouped by time with the second dimension)
 				String space = Utility.getSpaceName(dr, true);
@@ -174,15 +181,11 @@ public class MainBenchmark {
 			System.out.println("LABELLED DESIGN");
 			// Chunk entries by their labels
 			List<Chunk> labelledChunks = avaData.getLabelledChunks(maxChunkSize, labels.get(0));
-	
+
 			// Create space and bucket
 			hd = new HyperDex(hyperdexIP, hyperdexPort);
 			s3 = new S3(aws_access_key_id, aws_secret_access_key);
 			cass = new Cassandra(cassandraIP, cassandraPort);
-			hd.createSpaces(labels);
-			s3.createBuckets(labels);
-			cass.createTables(labels);
-			cass.deleteTableRecords(labels);
 	
 			for (DataRepresentation dr : dataRepresentations) {
 				// PUT
