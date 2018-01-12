@@ -75,7 +75,7 @@ def start_experiment(chunk_size, repetitions_num, aws_access_key_id, aws_secret_
 # 2. Connect to daemons, run hyperdex daemons
 # 3. Connect to machine that will run an experiment, run java
 
-print green('Wiping previous execution state')
+print green('Wiping any previous execution state')
 execute(wipe_state, hosts=ALL_HOSTS)
 
 print green('Starting HyperDex coordinator')
@@ -96,3 +96,6 @@ execute(start_cassandra, hosts=DAEMONS)
 time.sleep(60) # Give time for the datastores to spin up
 print green('Running experiment')
 execute(start_experiment, sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], hosts=[EXPERIMENT])
+
+print green('Wipe the state')
+execute(wipe_state, hosts=ALL_HOSTS)

@@ -84,13 +84,13 @@ public class MainBenchmark {
 		cass.delAll(cassandraTable); // wipe the table if any records left from previous executions
 		cass.createTables(labels);
 		cass.deleteTableRecords(labels);
-
+		
+		System.out.format("%s\t%s\t%s\t%s\t%s\t%s\n", "Data Store", "Representation", "PUT", "GET", "Deserialise, decrypt & Decompress", "Search");
 		for (int i = 0; i < experimentReps; i++) {
 			/*
 			 * Baseline Design Benchmark
 			 */
 			System.out.println("BASELINE");
-			System.out.format("%s\t%s\t%s\t%s\t%s\t%s\n", "Data Store", "Representation", "PUT", "GET", "Deserialise, decrypt & Decompress", "Search");
 		
 			for (DataRepresentation dr : dataRepresentations) {
 				// PUT single entries in HyperDex (does not make sense putting chunks because no way to identify a chunk grouped by time with the second dimension)
@@ -174,6 +174,8 @@ public class MainBenchmark {
 				s3.resetBenchmark();
 				cass.resetBenchmark();
 			}
+			// Close Cassandra session
+			cass.close();
 			
 			/*
 			 * Labelled Design Benchmark
@@ -253,6 +255,8 @@ public class MainBenchmark {
 				s3.resetBenchmark();
 				cass.resetBenchmark();
 			}
+			// Close Cassandra session
+			cass.close();
 		}
 	}
 
