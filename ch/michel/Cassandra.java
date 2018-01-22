@@ -146,7 +146,7 @@ public class Cassandra implements Storage {
 	public void createSingleEntryTable(String tableName) {
 		try {
 			String stm = String.format(
-					"CREATE TABLE IF NOT EXISTS %s.%s (key timestamp, value blob, tempSkin int, PRIMARY KEY (timestamp, tempSkin));", KEYSPACE,
+					"CREATE TABLE IF NOT EXISTS %s.%s (key timestamp, value blob, tempSkin int, PRIMARY KEY (key, tempSkin));", KEYSPACE,
 					tableName);
 			session.execute(stm);
 
