@@ -75,7 +75,7 @@ public class Cassandra implements Storage {
 
 	public List<byte[]> getRange(int temp1, int temp2, String table) {
 		List<byte[]> chunks = new ArrayList<byte[]>();
-		String stm = String.format("SELECT * FROM %s.%s WHERE tempSkin >= %s AND tempSkin <= %s",
+		String stm = String.format("SELECT * FROM %s.%s WHERE tempSkin >= %s AND tempSkin <= %s ALLOW FILTERING",
 				KEYSPACE, table, temp1, temp2);
 
 		long start = System.nanoTime();
