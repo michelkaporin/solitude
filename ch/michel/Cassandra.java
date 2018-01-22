@@ -149,6 +149,9 @@ public class Cassandra implements Storage {
 					"CREATE TABLE IF NOT EXISTS %s.%s (key timestamp PRIMARY KEY, value blob, tempSkin int);", KEYSPACE,
 					tableName);
 			session.execute(stm);
+
+			stm = String.format("CREATE INDEX temp_skin ON %s.%s (tempSkin);", KEYSPACE, tableName);
+			session.execute(stm);
 		} catch (Exception e) {
 			System.out.println("Failed to create table in Cassandra:\n" + e.toString());
 			System.exit(1);
