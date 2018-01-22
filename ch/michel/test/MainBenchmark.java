@@ -77,14 +77,14 @@ public class MainBenchmark {
 		Cassandra minicrypt = new Cassandra(cassandraIP, cassandraPort);
 		Cassandra cassSingle = new Cassandra(cassandraIP, cassandraPort);
 		String bucket = "solitude-baseline";
-		String cassandraTable = "baseline";
+		String minicryptTable = "baseline";
 		String cassandraSingleRecordTable = "baselineSingle";
 		
 		hd.createSpaces(labels);
 		s3.createBuckets(labels);		
-		minicrypt.createTable(cassandraTable);
+		minicrypt.createTable(minicryptTable);
 		cassSingle.createSingleEntryTable(cassandraSingleRecordTable);
-		minicrypt.delAll(cassandraTable); // wipe the table if any records left from previous executions
+		minicrypt.delAll(minicryptTable); // wipe the table if any records left from previous executions
 		cassSingle.delAll(cassandraSingleRecordTable);
 		minicrypt.createTables(labels);
 		minicrypt.deleteTableRecords(labels);
@@ -113,7 +113,7 @@ public class MainBenchmark {
 				for (Chunk chunk : chunks) {
 					byte[] data = chunk.serialise(dr, Optional.of(secretKey));
 					boolean success1 = s3.put(chunk, bucket, data);
-					boolean success2 = minicrypt.put(chunk, cassandraTable, data, false); // Adding cassandra entries in chunks
+					boolean success2 = minicrypt.put(chunk, minicryptTable, data, false); // Adding cassandra entries in chunks
 					if (!success1 || !success2) {
 						System.out.println("Failed to put chunk in S3 or in Cassandra" + chunk.getPrimaryAttribute());
 						System.exit(1);
@@ -133,10 +133,10 @@ public class MainBenchmark {
 				long s3GetAllElapsed = (System.nanoTime() - start)/1000000;
 				
 				// 2. Cassandra (MiniCrypt) GET
-				Collection<byte[]> cassResults = minicrypt.getAll(cassandraTable);
+				Collection<byte[]> cassResults = minicrypt.getAll(minicryptTable);
 
 				// 2. Cassandra GET range
-				Collection<byte[]> cassSingleResults = cassSingle.getRange(labels.get(0).low, labels.get(0).high, cassandraTable);
+				Collection<byte[]> cassSingleResults = cassSingle.getRange(labels.get(0).low, labels.get(0).high, cassandraSingleRecordTable);
 				
 				// Deserialise, decompress & decrypt if needed
 				// 1. HyperDex Objects
@@ -189,7 +189,7 @@ public class MainBenchmark {
 				}
 				for (Chunk chunk : chunks) {
 					s3.del(chunk, bucket);
-					minicrypt.del(chunk, cassandraTable);
+					minicrypt.del(chunk, minicryptTable);
 				}
 				hd.resetBenchmark();
 				s3.resetBenchmark();
