@@ -1,8 +1,6 @@
 package ch.michel.test;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +23,7 @@ public class LabelledDesign {
 			DataRepresentation.CHUNKED, DataRepresentation.CHUNKED_COMPRESSED, DataRepresentation.CHUNKED_COMPRESSED_ENCRYPTED 
 			};
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		maxChunkSize = Integer.valueOf(args[0]);
 		experimentReps = Integer.valueOf(args[1]); // Fix HyperDex repetition amount for statistical confidence
 
@@ -45,6 +43,26 @@ public class LabelledDesign {
 
 		System.out.println("Chunks: " + chunks.size());
 		System.out.println("Plaintext entries: " + plainEntries.size());
+
+		List<Chunk> lowTempChunks = new ArrayList<>();
+		List<Chunk> avgTempChunks = new ArrayList<>();
+		List<Chunk> highTempChunks = new ArrayList<>();
+		System.out.println("low temp: " + labels.get(0).name); 
+		System.out.println("mid temp: " + labels.get(1).name); 
+		System.out.println("high temp: " + labels.get(2).name);
+		
+		// Split chunks into 3 buckets for benchmarking
+		for (Chunk chunk : chunks) {
+			String spaceName = getLabelName(labels, chunk);
+			if (spaceName == labels.get(0).name) {
+				lowTempChunks.add(chunk);
+			} else if (spaceName == labels.get(1).name) {
+				avgTempChunks.add(chunk);
+			} else {
+				highTempChunks.add(chunk); 
+			}
+			throw new Exception("Unexpected to have more than 3 labels for the dataset.");
+		}
 
 		for (int i = 0; i < experimentReps; i++) {
 			System.out.format("\n%s)\n", i+1);
@@ -66,12 +84,27 @@ public class LabelledDesign {
 				}
 	
 				// GET
-				for (Chunk chunk : chunks) {
+				// TODO: Preprocess chunks in 3 buckets
+				System.out.println("Labelled Design Retrieval Times");
+				for (Chunk chunk : lowTempChunks) {
 					String spaceName = getLabelName(labels, chunk);
 					hd.get(chunk, spaceName);
 				}
-				System.out.format("[%s]\t%s\t%s\n", maxChunkSize, hd.getBenchmark().avgPut(), hd.getBenchmark().avgGet());
-	
+				System.out.format("[%s..%s]\t%s\n", labels.get(0).low, labels.get(0).high, hd.getBenchmark().avgGet());
+				hd.resetBenchmark();
+				for (Chunk chunk : avgTempChunks) {
+					String spaceName = getLabelName(labels, chunk);
+					hd.get(chunk, spaceName);
+				}
+				System.out.format("[%s..%s]\t%s\n", labels.get(1).low, labels.get(1).high, hd.getBenchmark().avgGet());
+				hd.resetBenchmark();
+				for (Chunk chunk : highTempChunks) {
+					String spaceName = getLabelName(labels, chunk);
+					hd.get(chunk, spaceName);
+				}
+				System.out.format("[%s..%s]\t%s\n", labels.get(2).low, labels.get(2).high, hd.getBenchmark().avgGet());
+				hd.resetBenchmark();
+
 				// DEL
 				for (Chunk chunk : chunksToDelete.values()) {
 					String spaceName = getLabelName(labels, chunk);
@@ -92,6 +125,7 @@ public class LabelledDesign {
 					plainEntriesToDelete.put(plainEntry.getPrimaryAttribute(), plainEntry);
 				}
 				// GET chunks by ranges provided in labels
+				System.out.println("Range Retrieval Times");
 				for (Label l : labels) {
 					hd.resetBenchmark();
 					// Average out the time by repeating range gets 
