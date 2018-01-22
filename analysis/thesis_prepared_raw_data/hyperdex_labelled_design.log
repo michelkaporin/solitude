@@ -1,0 +1,92 @@
+Chunks: 30
+Plaintext entries: 29338
+low temp: templ3048h3291
+mid temp: templ3306h3399
+high temp: templ3411h3587
+
+1)
+Labelled data stored as CHUNKED
+Labelled Design Retrieval Times
+[3048..3291]	0.38627
+[3306..3399]	0.365673
+[3411..3587]	0.343728
+Range Retrieval Times
+[3048..3291]	62.383075
+[3306..3399]	112.628171
+[3411..3587]	153.620051
+Labelled data stored as CHUNKED_COMPRESSED
+Labelled Design Retrieval Times
+[3048..3291]	0.103834
+[3306..3399]	0.09491
+[3411..3587]	0.091692
+Range Retrieval Times
+[3048..3291]	60.955545
+[3306..3399]	104.107592
+[3411..3587]	148.959639
+Labelled data stored as CHUNKED_COMPRESSED_ENCRYPTED
+Labelled Design Retrieval Times
+[3048..3291]	0.097394
+[3306..3399]	0.126138
+[3411..3587]	0.08969
+Range Retrieval Times
+[3048..3291]	81.817302
+[3306..3399]	151.209785
+[3411..3587]	158.476593
+
+2)
+Labelled data stored as CHUNKED
+Labelled Design Retrieval Times
+[3048..3291]	0.306265
+[3306..3399]	0.299936
+[3411..3587]	0.397651
+Range Retrieval Times
+[3048..3291]	58.072938
+[3306..3399]	105.138517
+[3411..3587]	155.728
+Labelled data stored as CHUNKED_COMPRESSED
+Labelled Design Retrieval Times
+[3048..3291]	0.158212
+[3306..3399]	0.098823
+[3411..3587]	0.106893
+Range Retrieval Times
+[3048..3291]	111.553597
+[3306..3399]	148.690979
+[3411..3587]	161.611122
+Labelled data stored as CHUNKED_COMPRESSED_ENCRYPTED
+Labelled Design Retrieval Times
+[3048..3291]	0.093672
+[3306..3399]	0.089101
+[3411..3587]	0.090943
+Range Retrieval Times
+[3048..3291]	62.963398
+[3306..3399]	124.423839
+[3411..3587]	162.359847
+
+3)
+Labelled data stored as CHUNKED
+Labelled Design Retrieval Times
+[3048..3291]	0.337497
+[3306..3399]	0.322495
+[3411..3587]	0.307785
+Range Retrieval Times
+[3048..3291]	61.793883
+[3306..3399]	122.759627
+[3411..3587]	169.534208
+Labelled data stored as CHUNKED_COMPRESSED
+Labelled Design Retrieval Times
+[3048..3291]	0.107233
+[3306..3399]	0.087971
+[3411..3587]	0.08405
+Range Retrieval Times
+[3048..3291]	65.373706
+[3306..3399]	114.307256
+[3411..3587]	150.504013
+Labelled data stored as CHUNKED_COMPRESSED_ENCRYPTED
+Labelled Design Retrieval Times
+[3048..3291]	0.093582
+[3306..3399]	0.121576
+[3411..3587]	0.085625
+Range Retrieval Times
+[3048..3291]	60.037905
+[3306..3399]	104.825855
+[3411..3587]	145.421367
