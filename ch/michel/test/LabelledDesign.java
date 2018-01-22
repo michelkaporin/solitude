@@ -58,10 +58,11 @@ public class LabelledDesign {
 				lowTempChunks.add(chunk);
 			} else if (spaceName == labels.get(1).name) {
 				avgTempChunks.add(chunk);
-			} else {
+			} else if (spaceName == labels.get(2).name) {
 				highTempChunks.add(chunk); 
+			} else {
+				throw new Exception("Unexpected to have more than 3 labels for the dataset.");
 			}
-			throw new Exception("Unexpected to have more than 3 labels for the dataset.");
 		}
 
 		for (int i = 0; i < experimentReps; i++) {
