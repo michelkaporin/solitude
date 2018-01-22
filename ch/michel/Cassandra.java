@@ -75,7 +75,8 @@ public class Cassandra implements Storage {
 
 	public List<byte[]> getRange(int temp1, int temp2, String table) {
 		List<byte[]> chunks = new ArrayList<byte[]>();
-		String stm = String.format("SELECT * FROM %s.%s WHERE tempSkin >= %s AND tempSkin <= %s ALLOW FILTERING", KEYSPACE, table, temp1, temp2);
+		String stm = String.format("SELECT * FROM %s.%s WHERE tempSkin >= %s AND tempSkin <= %s",
+				KEYSPACE, table, temp1, temp2);
 
 		long start = System.nanoTime();
 		ResultSet rs = session.execute(stm);
@@ -134,7 +135,9 @@ public class Cassandra implements Storage {
 
 	public void createTable(String tableName) {
 		try {
-			String stm = String.format("CREATE TABLE IF NOT EXISTS %s.%s (key timestamp PRIMARY KEY, value blob);",
+			String stm = String.format("DROP TABLE IF EXISTS %s.%s;", KEYSPACE, tableName);
+			session.execute(stm);
+			stm = String.format("CREATE TABLE IF NOT EXISTS %s.%s (key timestamp PRIMARY KEY, value blob);",
 					KEYSPACE, tableName);
 			session.execute(stm);
 		} catch (Exception e) {
@@ -145,12 +148,11 @@ public class Cassandra implements Storage {
 
 	public void createSingleEntryTable(String tableName) {
 		try {
-			String stm = String.format(
-					"CREATE TABLE IF NOT EXISTS %s.%s (key timestamp, value blob, tempSkin int, PRIMARY KEY (key));", KEYSPACE,
-					tableName);
+			String stm = String.format("DROP TABLE IF EXISTS %s.%s;", KEYSPACE, tableName);
 			session.execute(stm);
-
-			stm = String.format("CREATE INDEX IF NOT EXISTS temp_skin ON %s.%s (tempSkin);", KEYSPACE, tableName);
+			stm = String.format(
+					"CREATE TABLE IF NOT EXISTS %s.%s (key timestamp, value blob, tempSkin int, PRIMARY KEY (tempskin, key));", KEYSPACE,
+					tableName);
 			session.execute(stm);
 		} catch (Exception e) {
 			System.out.println("Failed to create table in Cassandra:\n" + e.toString());
