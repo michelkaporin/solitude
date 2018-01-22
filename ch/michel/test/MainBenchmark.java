@@ -74,16 +74,20 @@ public class MainBenchmark {
 		
 		HyperDex hd = new HyperDex(hyperdexIP, hyperdexPort);
 		S3 s3 = new S3(aws_access_key_id, aws_secret_access_key);
-		Cassandra cass = new Cassandra(cassandraIP, cassandraPort);
+		Cassandra minicrypt = new Cassandra(cassandraIP, cassandraPort);
+		Cassandra cassSingle = new Cassandra(cassandraIP, cassandraPort);
 		String bucket = "solitude-baseline";
 		String cassandraTable = "baseline";
+		String cassandraSingleRecordTable = "baselineSingle";
 		
 		hd.createSpaces(labels);
 		s3.createBuckets(labels);		
-		cass.createTable(cassandraTable);
-		cass.delAll(cassandraTable); // wipe the table if any records left from previous executions
-		cass.createTables(labels);
-		cass.deleteTableRecords(labels);
+		minicrypt.createTable(cassandraTable);
+		cassSingle.createSingleEntryTable(cassandraSingleRecordTable);
+		minicrypt.delAll(cassandraTable); // wipe the table if any records left from previous executions
+		cassSingle.delAll(cassandraSingleRecordTable);
+		minicrypt.createTables(labels);
+		minicrypt.deleteTableRecords(labels);
 		
 		System.out.format("%s\t%s\t%s\t%s\t%s\t%s\n", "Data Store", "Representation", "PUT", "GET", "Deserialise, decrypt & Decompress", "Search");
 		for (int i = 0; i < experimentReps; i++) {
@@ -97,8 +101,9 @@ public class MainBenchmark {
 				String space = Utility.getSpaceName(dr, true);
 				for (Chunk chunk : singleEntryChunks) {
 					byte[] data = chunk.serialise(dr, Optional.of(secretKey));
-					boolean success = hd.put(chunk, space, data, true);
-					if (!success) {
+					boolean success1 = hd.put(chunk, space, data, true);
+					boolean success2 = cassSingle.put(chunk, cassandraSingleRecordTable, data, true); // Adding cassandra entry-by-entry
+					if (!success1 && !success2) {
 						System.out.println("Failed to put chunk in HyperDex" + chunk.getPrimaryAttribute());
 						System.exit(1);
 					}
@@ -108,7 +113,7 @@ public class MainBenchmark {
 				for (Chunk chunk : chunks) {
 					byte[] data = chunk.serialise(dr, Optional.of(secretKey));
 					boolean success1 = s3.put(chunk, bucket, data);
-					boolean success2 = cass.put(chunk, cassandraTable, data);
+					boolean success2 = minicrypt.put(chunk, cassandraTable, data, false); // Adding cassandra entries in chunks
 					if (!success1 || !success2) {
 						System.out.println("Failed to put chunk in S3 or in Cassandra" + chunk.getPrimaryAttribute());
 						System.exit(1);
@@ -127,8 +132,11 @@ public class MainBenchmark {
 				}
 				long s3GetAllElapsed = (System.nanoTime() - start)/1000000;
 				
-				// 2. Cassandra GET
-				Collection<byte[]> cassResults = cass.getAll(cassandraTable);
+				// 2. Cassandra (MiniCrypt) GET
+				Collection<byte[]> cassResults = minicrypt.getAll(cassandraTable);
+
+				// 2. Cassandra GET range
+				Collection<byte[]> cassSingleResults = cassSingle.getRange(labels.get(0).low, labels.get(0).high, cassandraTable);
 				
 				// Deserialise, decompress & decrypt if needed
 				// 1. HyperDex Objects
@@ -145,21 +153,34 @@ public class MainBenchmark {
 				}
 				long s3DecodeElapsed = (System.nanoTime() - start)/1000000;
 				
-				// 2. Cassandra: retrieve all of them
+				// 2. Cassandra (MiniCrypt): deserialise all of them
 				start = System.nanoTime();
 				for (byte[] res : cassResults) {
 					Chunk.deserialise(dr, res, Optional.of(secretKey));
 				}
-				long cassDecodeElapsed = (System.nanoTime() - start)/1000000;
+				long minicryptDecodeElapsed = (System.nanoTime() - start)/1000000;
+
+				// 2. Cassandra (MiniCrypt): deserialise all of them
+				start = System.nanoTime();
+				for (byte[] res : cassSingleResults) {
+					Chunk.deserialise(dr, res, Optional.of(secretKey));
+				}
+				long cassSingleDecodeElapsed = (System.nanoTime() - start)/1000000;
 				
-				// Search for the range of chunks
+				// Search for the range of chunks (S3)
 				start = System.nanoTime();
 				searchRange(secretKey, labels, dr, s3Results);
-				long avgSearch = (System.nanoTime() - start)/1000000;
+				long avgS3Search = (System.nanoTime() - start)/1000000;
+
+				// Search for the range of chunks (MiniCrypt)
+				start = System.nanoTime();
+				searchRange(secretKey, labels, dr, cassResults);
+				long avgMiniCryptSearch = (System.nanoTime() - start)/1000000;
 	
 				printStats("HyperDex", dr, hd.getBenchmark().avgPut(), hd.getBenchmark().avgGet(), hdDecodeElapsed, 0);
-				printStats("S3", dr, s3.getBenchmark().avgPut(), s3GetAllElapsed, s3DecodeElapsed, avgSearch);
-				printStats("Cassandra", dr, cass.getBenchmark().avgPut(), cass.getBenchmark().avgGet(), cassDecodeElapsed, avgSearch);
+				printStats("S3", dr, s3.getBenchmark().avgPut(), s3GetAllElapsed, s3DecodeElapsed, avgS3Search);
+				printStats("Cassandra (MiniCrypt)", dr, minicrypt.getBenchmark().avgPut(), minicrypt.getBenchmark().avgGet(), minicryptDecodeElapsed, avgMiniCryptSearch);
+				printStats("Cassandra", dr, cassSingle.getBenchmark().avgPut(), cassSingle.getBenchmark().avgGet(), cassSingleDecodeElapsed, 0);
 				
 				// Clean the state -> DEL items from the store, reset benchmarks
 				// DEL
@@ -168,14 +189,14 @@ public class MainBenchmark {
 				}
 				for (Chunk chunk : chunks) {
 					s3.del(chunk, bucket);
-					cass.del(chunk, cassandraTable);
+					minicrypt.del(chunk, cassandraTable);
 				}
 				hd.resetBenchmark();
 				s3.resetBenchmark();
-				cass.resetBenchmark();
+				minicrypt.resetBenchmark();
 			}
 			// Close Cassandra session
-			cass.close();
+			minicrypt.close();
 			
 			/*
 			 * Labelled Design Benchmark
@@ -187,7 +208,7 @@ public class MainBenchmark {
 			// Create space and bucket
 			hd = new HyperDex(hyperdexIP, hyperdexPort);
 			s3 = new S3(aws_access_key_id, aws_secret_access_key);
-			cass = new Cassandra(cassandraIP, cassandraPort);
+			minicrypt = new Cassandra(cassandraIP, cassandraPort);
 	
 			for (DataRepresentation dr : dataRepresentations) {
 				// PUT
@@ -195,7 +216,7 @@ public class MainBenchmark {
 					byte[] data = chunk.serialise(dr, Optional.of(secretKey));
 					boolean success1 = hd.put(chunk, labels.get(0).name, data, false);
 					boolean success2 = s3.put(chunk, labels.get(0).name, data);
-					boolean success3 = cass.put(chunk, labels.get(0).name, data);
+					boolean success3 = minicrypt.put(chunk, labels.get(0).name, data, false);
 					if (!success1 || !success2 || !success3) {
 						System.out.println("Failed to put chunk in HyperDex, S3 or Cassandra" + chunk.getPrimaryAttribute());
 						System.exit(1);
@@ -219,7 +240,7 @@ public class MainBenchmark {
 				}
 				long s3GetAllElapsed = (System.nanoTime() - start)/1000000;
 				
-				cassResults = cass.getAll(labels.get(0).name);
+				cassResults = minicrypt.getAll(labels.get(0).name);
 				
 				// Deserialise, decrypt and decompress
 				start = System.nanoTime();
@@ -242,21 +263,21 @@ public class MainBenchmark {
 				
 				printStats("HyperDex", dr, hd.getBenchmark().avgPut(), hdGetAllElapsed, hdDecodeElapsed, 0);
 				printStats("S3", dr, s3.getBenchmark().avgPut(), s3GetAllElapsed, s3DecodeElapsed, 0); 
-				printStats("Cassandra", dr, cass.getBenchmark().avgPut(), cass.getBenchmark().avgGet(), cassDecodeElapsed, 0);
+				printStats("Cassandra", dr, minicrypt.getBenchmark().avgPut(), minicrypt.getBenchmark().avgGet(), cassDecodeElapsed, 0);
 	
 				// Clean the state -> DEL items from the store, reset benchmarks
 				// DEL
 				for (Chunk chunk : labelledChunks) {
 					hd.del(chunk, labels.get(0).name, false);
 					s3.del(chunk, labels.get(0).name);
-					cass.del(chunk, labels.get(0).name);
+					minicrypt.del(chunk, labels.get(0).name);
 				}
 				hd.resetBenchmark();
 				s3.resetBenchmark();
-				cass.resetBenchmark();
+				minicrypt.resetBenchmark();
 			}
 			// Close Cassandra session
-			cass.close();
+			minicrypt.close();
 		}
 	}
 
