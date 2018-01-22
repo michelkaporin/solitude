@@ -150,7 +150,7 @@ public class Cassandra implements Storage {
 					tableName);
 			session.execute(stm);
 
-			stm = String.format("CREATE INDEX temp_skin ON %s.%s (tempSkin);", KEYSPACE, tableName);
+			stm = String.format("CREATE INDEX IF NOT EXISTS temp_skin ON %s.%s (tempSkin);", KEYSPACE, tableName);
 			session.execute(stm);
 		} catch (Exception e) {
 			System.out.println("Failed to create table in Cassandra:\n" + e.toString());
