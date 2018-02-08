@@ -68,8 +68,8 @@ public class MainBenchmark {
 		// Setup phase
 		AvaData avaData = new AvaData();
 		SecretKey secretKey = Utility.generateSecretKey();
-		List<Chunk> chunks = avaData.getChunks(maxChunkSize, false);
-		List<Chunk> singleEntryChunks = avaData.getChunks(1, false);
+		List<Chunk> chunks = avaData.getChunks(maxChunkSize, false, false);
+		List<Chunk> singleEntryChunks = avaData.getChunks(1, false, false);
 		List<Label> labels = Utility.getTempLabels(chunks, 3); // obtain labels for produced chunks
 		
 		HyperDex hd = new HyperDex(hyperdexIP, hyperdexPort);
@@ -81,7 +81,7 @@ public class MainBenchmark {
 		String cassandraSingleRecordTable = "baselineSingle";
 		
 		hd.createSpaces(labels);
-		s3.createBuckets(labels);		
+		s3.createBuckets(labels);
 		minicrypt.createTable(minicryptTable);
 		cassSingle.createSingleEntryTable(cassandraSingleRecordTable);
 		minicrypt.delAll(minicryptTable); // wipe the table if any records left from previous executions

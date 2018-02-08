@@ -1,7 +1,10 @@
 package ch.lubu;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,20 +20,20 @@ public class AvaData {
 	private List<Chunk> tempSkinUniqueChunks; // Maintain map of chunks with unique second attribute
 	private int cachedBlockSize = -1; // ensure correct block size is cached
 	
-	public List<Chunk> getChunks(int maxBlocksize, boolean tempSkinUnique) {
+	public List<Chunk> getChunks(int maxBlocksize, boolean tempSkinUnique, boolean sortEntries) {
 		if (tempSkinUnique) {
 			return this.getTempSkinUniqueChunks(maxBlocksize);
 		}
 		
 		if (this.chunks == null || cachedBlockSize != maxBlocksize) {
-			this.transferData(maxBlocksize);
+			this.transferData(maxBlocksize, sortEntries);
 		}
 		
 		return this.chunks;
 	}
 	
 	public List<Chunk> getLabelledChunks(int maxBlocksize, Label label) {
-		List<Entry> entries = importEntries();
+		List<Entry> entries = importEntries(false);
 		List<Chunk> chunks = new ArrayList<>();
 		
 		Chunk curChunk = Chunk.getNewBlock(maxBlocksize);
@@ -58,18 +61,19 @@ public class AvaData {
 	
 	private List<Chunk> getTempSkinUniqueChunks(int maxBlocksize) {
 		if (this.tempSkinUniqueChunks == null || cachedBlockSize != maxBlocksize) {
-			this.transferData(maxBlocksize);
+			this.transferData(maxBlocksize, false);
 		}
 		
 		return this.tempSkinUniqueChunks;
 	}
 	
-	private void transferData(int maxBlocksize) {
+	private void transferData(int maxBlocksize, boolean sortEntries) {
 		this.counter = 0;
 
 		// Import entries from CSVs
-		List<Entry> entries = importEntries();
-			
+		List<Entry> entries = importEntries(sortEntries);
+		if (sortEntries) Collections.sort(entries);
+
 		// Transfer data to chunks
 		Chunk curChunk = Chunk.getNewBlock(maxBlocksize);
 		this.chunks = new ArrayList<Chunk>();
@@ -94,8 +98,9 @@ public class AvaData {
 		this.cachedBlockSize = maxBlocksize;
 	}
 
-	private List<Entry> importEntries() {
+	private List<Entry> importEntries(boolean sortEntries) {
 		List<Entry> entries = new ArrayList<>();
+		
 		AvaDataImporter importer;
 		for (int csvIndex = 1; csvIndex <= 10; csvIndex++) {
 			try {
@@ -128,6 +133,7 @@ public class AvaData {
 		int lastTempSkin = lastEntry.getValue();
 		curChunk.setPrimaryAttribute(lastEntry.getTimestamp()); // set primary key for the chunk
 		curChunk.setSecondAttribute(lastTempSkin); // set secondary key for the chunk
+
 		if (tempSkinMap.get(lastTempSkin) == null) {
 			this.tempSkinUniqueChunks.add(curChunk);
 			tempSkinMap.put(lastTempSkin, curChunk);

@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigInteger;
 import java.security.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -67,6 +68,36 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry> {
     
     public void setSecondAttribute(int attribute) {
     		this.secondAttribute = attribute;
+    }
+
+    public BigInteger getSum() {
+        BigInteger sum = BigInteger.ZERO;
+        for (Entry entry : this.entries) {
+            sum = sum.add(BigInteger.valueOf(entry.getValue()));
+        }
+        return sum;
+    }
+
+    public BigInteger getCount() {
+        // TODO
+        return null;
+    }
+
+    public BigInteger getMin() {
+        // TODO
+        return null;
+    }
+    
+    public BigInteger getMax() {
+        // TODO
+        return null;
+    }
+
+    public Entry getFirstEntry() {
+        return this.entries.get(0);
+    }
+    public Entry getLastEntry() {
+        return this.entries.get(this.entries.size()-1);
     }
     
     public byte[] serialise(DataRepresentation state, Optional<SecretKey> secretKey) {
