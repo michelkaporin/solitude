@@ -30,6 +30,10 @@ public class Entry implements Serializable, Comparable<Entry> {
         return data;
     }
 
+    public Entry copy(long addedTime) {
+        return new Entry(this.timestamp+addedTime, this.temp_skin, this.data);
+    }
+
 	@Override
 	public int compareTo(Entry arg0) {
 		if (this.timestamp < arg0.timestamp) {

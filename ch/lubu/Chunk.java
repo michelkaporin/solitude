@@ -51,9 +51,18 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry> {
      * @return
      */
     public boolean putIotData(Entry entry) {
-        if (this.entries.size() >= maxEntries)
+        if (this.entries.size() >= maxEntries) {
             return false;
+        }
         this.entries.add(entry);
+        return true;
+    }
+
+    public boolean putIotData(List<Entry> entries) {
+        if (this.entries.size() >= maxEntries) {
+            return false;
+        }
+        this.entries = entries;
         return true;
     }
     
@@ -98,6 +107,19 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry> {
     }
     public Entry getLastEntry() {
         return this.entries.get(this.entries.size()-1);
+    }
+
+    public Chunk copy(long addedTime) {
+        Chunk newChunk = Chunk.getNewBlock(this.maxEntries);
+        List<Entry> newEntries = new ArrayList<>();
+        for (Entry e : this.entries) {
+            newEntries.add(e.copy(addedTime));
+        }
+        newChunk.putIotData(newEntries);
+        newChunk.setPrimaryAttribute(newChunk.getLastEntry().getTimestamp());
+        newChunk.setSecondAttribute(this.secondAttribute);
+        
+        return newChunk;
     }
     
     public byte[] serialise(DataRepresentation state, Optional<SecretKey> secretKey) {
