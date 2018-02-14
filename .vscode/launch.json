@@ -1,0 +1,42 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Main Benchmark",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "stopOnEntry": false,
+            "mainClass": "ch.michel.test.MainBenchmark",
+            "args": "1000 3 127.0.0.1 AKIAI6DALQXSPRIEAPWQ zerBOTixXhgqvJuij00evoJOOHYDAuYR9cYTZXYy 35.176.244.248",
+            "vmArgs": "--add-modules=java.xml.bind,java.activation"
+        },
+        {
+            "projectName": "treedb",
+            "type": "java",
+            "name": "HyperDex: Labelled Design vs Range",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "stopOnEntry": false,
+            "mainClass": "ch.michel.test.LabelledDesign",
+            "args": "1000 3"
+        },
+        {
+            "projectName": "Solitude",
+            "type": "java",
+            "name": "TreeDB: Baseline vs. TreeDB",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "stopOnEntry": false,
+            "mainClass": "ch.michel.test.TreeDBBenchmark",
+            "args": "1000 1 AKIAI6DALQXSPRIEAPWQ zerBOTixXhgqvJuij00evoJOOHYDAuYR9cYTZXYy 127.0.0.1 8001 >> LOG.log",
+            "vmArgs": "--add-modules=java.xml.bind,java.activation"
+        }
+    ]
+}
