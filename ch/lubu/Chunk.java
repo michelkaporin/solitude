@@ -86,20 +86,13 @@ public class Chunk implements Iterator<Entry>, Iterable<Entry> {
         }
         return sum;
     }
-
-    public BigInteger getCount() {
-        // TODO
-        return null;
-    }
-
-    public BigInteger getMin() {
-        // TODO
-        return null;
-    }
     
     public BigInteger getMax() {
-        // TODO
-        return null;
+        BigInteger max = BigInteger.valueOf(this.entries.get(0).getValue());
+        for (Entry entry : this.entries) {
+            max = max.max(BigInteger.valueOf(entry.getValue()));
+        }
+        return max;
     }
 
     public Entry getFirstEntry() {
