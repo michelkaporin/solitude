@@ -14,6 +14,7 @@ import ch.michel.test.Helpers.TreeDBBenchmarkStats;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import javax.crypto.SecretKey;
 import com.google.gson.JsonObject;
@@ -41,7 +42,7 @@ public class TreeDBBenchmark {
         AvaData avaData = new AvaData();
         List<Chunk> chunks = avaData.getChunks(maxChunkSize, false, true); // 30 chunks
         List<Chunk> lastChunks = chunks;
-        for (int i = 0; i < 19; i++) { // copy to get to 600 chunks amounts for better results
+        for (int i = 0; i < 34; i++) { // copy over to get to 1030 chunks for a better statistical view
             List<Chunk> newChunks = new ArrayList<>();
             lastChunks.forEach(c -> newChunks.add(c.copy(86400*30))); // add 30 days on top of the current data
             chunks.addAll(newChunks); 
@@ -73,13 +74,13 @@ public class TreeDBBenchmark {
             String paillierSumMetadata = String.format("{ 'from': %s, 'to': %s, 'sum': %s }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), keys.publicKey.raw_encrypt_without_obfuscation(plainSum));
             trDB.insert(paillierStreamID, c.getPrimaryAttribute(), data, paillierSumMetadata); // append chunk to the index
 
-            String ecelGamalSumMetadata = String.format("{ 'from': %s, 'to': %s, 'sum': %s }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), ecelgamal.encryptAndEncode(plainSum));
+            String ecelGamalSumMetadata = String.format("{ 'from': %s, 'to': %s, 'sum': '%s' }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), ecelgamal.encryptAndEncode(plainSum));
             trDB.insert(ecelGamalStreamID, c.getPrimaryAttribute(), data, ecelGamalSumMetadata);
         
             String opeMaxMetadata = String.format("{ 'from': %s, 'to': %s, 'max': %s }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), ope.encrypt(plainSum));
             trDB.insert(opeStreamID, c.getPrimaryAttribute(), data, opeMaxMetadata);
 
-            String oreMxMetadata = String.format("{ 'from': %s, 'to': %s, 'max': %s }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), ore.encryptAndEncode(plainSum));
+            String oreMxMetadata = String.format("{ 'from': %s, 'to': %s, 'max': '%s' }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), ore.encryptAndEncode(plainSum));
             trDB.insert(oreStreamID, c.getPrimaryAttribute(), data, oreMxMetadata);
         }
 
@@ -142,52 +143,52 @@ public class TreeDBBenchmark {
                 // GET Paillier sum
                 long start = System.nanoTime();
                 String stats = trDB.getStatistics(paillierStreamID, chunks.get(0).getFirstEntry().getTimestamp(), chunks.get(j).getLastEntry().getTimestamp());
-                long treeDbRetrievalTime = (System.nanoTime() - start)/1000000;
+                float treeDbRetrievalTime = timestamp(start);
                 
                 start = System.nanoTime();
                 JsonParser parser = new JsonParser();
                 JsonObject jObj = parser.parse(stats).getAsJsonObject();
                 BigInteger decryptedSum = keys.privateKey.raw_decrypt(jObj.get("sum").getAsBigInteger());
-                long treeDbDecodeTime = (System.nanoTime() - start)/1000000;
+                float treeDbDecodeTime = timestamp(start);
 
                 paillierStats.add(new TreeDBBenchmarkStats("TreeDB+S3", treeDbRetrievalTime, treeDbDecodeTime, 0));
 
                 // GET EC El Gamal Sum
                 start = System.nanoTime();
                 stats = trDB.getStatistics(ecelGamalStreamID, chunks.get(0).getFirstEntry().getTimestamp(), chunks.get(j).getLastEntry().getTimestamp());
-                treeDbRetrievalTime = (System.nanoTime() - start)/1000000;
+                treeDbRetrievalTime = timestamp(start);
                 
                 start = System.nanoTime();
                 parser = new JsonParser();
                 jObj = parser.parse(stats).getAsJsonObject();
                 BigInteger decryptedSum2 = ecelgamal.decodeAndDecrypt(jObj.get("sum").getAsString());
-                treeDbDecodeTime = (System.nanoTime() - start)/1000000;
+                treeDbDecodeTime = timestamp(start);
 
                 ecelGamalStats.add(new TreeDBBenchmarkStats("TreeDB+S3", treeDbRetrievalTime, treeDbDecodeTime, 0));
                 
                 // GET OPE Max
                 start = System.nanoTime();
                 stats = trDB.getStatistics(opeStreamID, chunks.get(0).getFirstEntry().getTimestamp(), chunks.get(j).getLastEntry().getTimestamp());
-                treeDbRetrievalTime = (System.nanoTime() - start)/1000000;
+                treeDbRetrievalTime = timestamp(start);
                 
                 start = System.nanoTime();
                 parser = new JsonParser();
                 jObj = parser.parse(stats).getAsJsonObject();
                 BigInteger decryptedMax = ope.decrypt(jObj.get("max").getAsBigInteger());
-                treeDbDecodeTime = (System.nanoTime() - start)/1000000;
+                treeDbDecodeTime = timestamp(start);
 
                 opeStats.add(new TreeDBBenchmarkStats("TreeDB+S3", treeDbRetrievalTime, treeDbDecodeTime, 0));
 
                 // GET ORE Max
                 start = System.nanoTime();
                 stats = trDB.getStatistics(oreStreamID, chunks.get(0).getFirstEntry().getTimestamp(), chunks.get(j).getLastEntry().getTimestamp());
-                treeDbRetrievalTime = (System.nanoTime() - start)/1000000;
+                treeDbRetrievalTime = timestamp(start);
                 
                 start = System.nanoTime();
                 parser = new JsonParser();
                 jObj = parser.parse(stats).getAsJsonObject();
                 BigInteger decryptedMax2 = ore.decodeAndDecrypt(jObj.get("max").getAsString());
-                treeDbDecodeTime = (System.nanoTime() - start)/1000000;
+                treeDbDecodeTime = timestamp(start);
 
                 oreStats.add(new TreeDBBenchmarkStats("TreeDB+S3", treeDbRetrievalTime, treeDbDecodeTime, 0));
             }
@@ -219,7 +220,12 @@ public class TreeDBBenchmark {
 	private static void printStats(String header, List<TreeDBBenchmarkStats> stats) {
         System.out.println(header);
         for (TreeDBBenchmarkStats s : stats) {
-            System.out.format("%s\t%s\t%s\t%s\t%s\n", s.design, s.retrievalTime, s.decodeDecryptTime, s.computationTime, s.design+s.retrievalTime+s.decodeDecryptTime+s.computationTime);
+            float overall = s.retrievalTime+s.decodeDecryptTime+s.computationTime;
+            System.out.format("%s\t%s\t%s\t%s\t%s\n", s.design, String.format(Locale.ROOT, "%.2f", s.retrievalTime), String.format(Locale.ROOT, "%.2f", s.decodeDecryptTime), String.format(Locale.ROOT, "%.2f", s.computationTime), String.format(Locale.ROOT, "%.2f", overall));
         }
-	}
+    }
+    
+    private static float timestamp(long start) {
+        return ((float) (System.nanoTime() - start))/1000000;
+    }
 }

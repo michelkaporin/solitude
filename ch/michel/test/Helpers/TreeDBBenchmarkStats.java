@@ -2,11 +2,11 @@ package ch.michel.test.Helpers;
 
 public class TreeDBBenchmarkStats {
     public String design;
-    public long retrievalTime;
-    public long decodeDecryptTime;
-    public long computationTime;
+    public float retrievalTime;
+    public float decodeDecryptTime;
+    public float computationTime;
 
-    public TreeDBBenchmarkStats(String design, long retrievalTime, long decodeDecryptTime, long computationTime) {
+    public TreeDBBenchmarkStats(String design, float retrievalTime, float decodeDecryptTime, float computationTime) {
         this.design = design;
         this.retrievalTime = retrievalTime;
         this.decodeDecryptTime = decodeDecryptTime;
