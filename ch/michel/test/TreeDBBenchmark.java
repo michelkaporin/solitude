@@ -10,7 +10,7 @@ import ch.lubu.Chunk;
 import ch.michel.DataRepresentation;
 import ch.michel.S3;
 import ch.michel.Utility;
-import ch.michel.test.Helpers.TreeDBBenchmarkStats;
+import ch.michel.test.helpers.TreeDBBenchmarkStats;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;

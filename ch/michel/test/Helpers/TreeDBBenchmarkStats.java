@@ -1,4 +1,4 @@
-package ch.michel.test.Helpers;
+package ch.michel.test.helpers;
 
 public class TreeDBBenchmarkStats {
     public String design;
