@@ -25,7 +25,7 @@ public class PaillierVsECElGamal {
 
             /** Encrypt */
             long start = System.nanoTime();
-            BigInteger paillierVal = keys.publicKey.raw_encrypt_without_obfuscation(plainInt);
+            BigInteger paillierVal = keys.publicKey.raw_encrypt(plainInt);
             float encPaillier = timestamp(start);
             sumEncPaillier += encPaillier;
 
