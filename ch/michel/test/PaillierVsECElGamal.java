@@ -48,7 +48,7 @@ public class PaillierVsECElGamal {
             System.out.format("%s\t%s\t%s\t%s\n", format(encPaillier), format(encECElGamal), format(decPaillier), format(decECElGamal));
             //Thread.sleep(500);
         }
-        System.out.format("AVG ENC (Paillier): %s; AVG ENC(EC ElGamal): %s; AVG DEC(Paillier): %s; AVG DEC(EC ElGamal): %s", format(sumEncPaillier/timesToRun), format(sumEncEcelgamal), format(sumDecPaillier), format(sumDecEcelgamal));
+        System.out.format("AVG ENC (Paillier): %s\tAVG ENC(EC ElGamal): %s\tAVG DEC(Paillier): %s\tAVG DEC(EC ElGamal): %s\n", format(sumEncPaillier/timesToRun), format(sumEncEcelgamal/timesToRun), format(sumDecPaillier/timesToRun), format(sumDecEcelgamal/timesToRun));
     }
     
     private static float timestamp(long start) {
