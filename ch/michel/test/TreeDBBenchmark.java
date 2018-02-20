@@ -71,7 +71,7 @@ public class TreeDBBenchmark {
             BigInteger plainSum = c.getSum();
             data = c.serialise(DR, Optional.of(secretKey));
 
-            String paillierSumMetadata = String.format("{ 'from': %s, 'to': %s, 'sum': %s }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), keys.publicKey.raw_encrypt_without_obfuscation(plainSum));
+            String paillierSumMetadata = String.format("{ 'from': %s, 'to': %s, 'sum': %s }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), keys.publicKey.raw_encrypt(plainSum));
             trDB.insert(paillierStreamID, c.getPrimaryAttribute(), data, paillierSumMetadata); // append chunk to the index
 
             String ecelGamalSumMetadata = String.format("{ 'from': %s, 'to': %s, 'sum': '%s' }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), ecelgamal.encryptAndEncode(plainSum));
