@@ -56,7 +56,6 @@ public class TreeDBBenchmark {
         }
 
         S3 s3 = new S3(aws_access_key_id, aws_secret_access_key);
-        cleanState(chunks, s3, BASELINE_S3_BUCKET);
         TreeDB trDB = new TreeDB(treedbIP, treedbPort);
         trDB.openConnection();
         CryptoKeyPair keys = CryptoKeyPair.generateKeyPair();
