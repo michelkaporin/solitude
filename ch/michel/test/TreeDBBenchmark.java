@@ -56,6 +56,7 @@ public class TreeDBBenchmark {
         }
 
         S3 s3 = new S3(aws_access_key_id, aws_secret_access_key);
+        cleanState(chunks, s3, BASELINE_S3_BUCKET, false);        
         TreeDB trDB = new TreeDB(treedbIP, treedbPort);
         trDB.openConnection();
         CryptoKeyPair keys = CryptoKeyPair.generateKeyPair();
@@ -227,12 +228,12 @@ public class TreeDBBenchmark {
         }
 
         // Clean state of the experiment
-        cleanState(chunks, s3, BASELINE_S3_BUCKET);        
+        cleanState(chunks, s3, BASELINE_S3_BUCKET, false);        
         for (int k=0; k < kChildren.length; k++) {
-            cleanState(chunks, s3, paillierStreamsID.get(k));
-            cleanState(chunks, s3, ecelGamalStreamsID.get(k));
-            cleanState(chunks, s3, opeStreamsID.get(k));
-            cleanState(chunks, s3, oreStreamsID.get(k));
+            cleanState(chunks, s3, paillierStreamsID.get(k), true);
+            cleanState(chunks, s3, ecelGamalStreamsID.get(k), true);
+            cleanState(chunks, s3, opeStreamsID.get(k), true);
+            cleanState(chunks, s3, oreStreamsID.get(k), true);
         }
         trDB.closeConnection();
     }
@@ -245,11 +246,11 @@ public class TreeDBBenchmark {
         }
 	}
 
-	private static void cleanState(List<Chunk> chunks, S3 s3, String bucketName) {
+	private static void cleanState(List<Chunk> chunks, S3 s3, String bucketName, boolean deleteBucket) {
         for (Chunk c : chunks) {
             s3.del(c, bucketName);
         }
-        s3.deleteBucket(bucketName);        
+        if (deleteBucket) s3.deleteBucket(bucketName);        
     }
 
 	private static void printStats(String header, List<TreeDBBenchmarkStats> stats) {
