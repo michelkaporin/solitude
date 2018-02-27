@@ -24,8 +24,11 @@ import com.google.gson.JsonParser;
 
 /**
  * 
- * Running locally:
- * java -classpath ".:lib/aws-sdk/lib/aws-java-sdk-1.11.255.jar:lib/aws-sdk/third-party/lib/*:/Users/michel/Git/treedb/client/target/treedb.client-0.0.1-SNAPSHOT-jar-with-dependencies.jar" --add-modules=java.xml.bind,java.activation ch/michel/test/TreeDBBenchmark 1000 1 AKIAI6DALQXSPRIEAPWQ zerBOTixXhgqvJuij00evoJOOHYDAuYR9cYTZXYy 127.0.0.1 8001 >> LOG.log
+ * Running:
+ * java -classpath ".:lib/aws-sdk/lib/aws-java-sdk-1.11.255.jar:lib/aws-sdk/third-party/lib/*:lib/treedb.client-0.0.1-SNAPSHOT-jar-with-dependencies.jar" --add-modules=java.xml.bind,java.activation ch/michel/test/TreeDBBenchmark 1000 1 AKIAI6DALQXSPRIEAPWQ zerBOTixXhgqvJuij00evoJOOHYDAuYR9cYTZXYy 127.0.0.1 8001 >> LOG.log
+ * 
+ * Compiling:
+ * javac -classpath ".:/usr/local/share/java/org.hyperdex.client-1.8.1.jar:lib/aws-sdk/lib/aws-java-sdk-1.11.255.jar:lib/aws-sdk/third-party/lib/*:lib/cassandra/cassandra-driver-core-3.3.2.jar:lib/cassandra/lib/*:lib/treedb.client-0.0.1-SNAPSHOT-jar-with-dependencies.jar" $(find . -name '*.java')
  */
 public class TreeDBBenchmark {
     private static String BASELINE_S3_BUCKET = "treedb-baseline";
@@ -225,8 +228,8 @@ public class TreeDBBenchmark {
         }
 
         // Clean state of the experiment
+        cleanState(chunks, s3, BASELINE_S3_BUCKET);        
         for (int k=0; k < kChildren.length; k++) {
-            cleanState(chunks, s3, BASELINE_S3_BUCKET);
             cleanState(chunks, s3, paillierStreamsID.get(k));
             cleanState(chunks, s3, ecelGamalStreamsID.get(k));
             cleanState(chunks, s3, opeStreamsID.get(k));
@@ -247,6 +250,7 @@ public class TreeDBBenchmark {
         for (Chunk c : chunks) {
             s3.del(c, bucketName);
         }
+        s3.deleteBucket(bucketName);        
     }
 
 	private static void printStats(String header, List<TreeDBBenchmarkStats> stats) {
