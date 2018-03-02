@@ -35,6 +35,18 @@
             "console": "internalConsole",
             "stopOnEntry": false,
             "mainClass": "ch.michel.test.TreeDBBenchmark",
+            "args": "1000 1 AKIAI6DALQXSPRIEAPWQ zerBOTixXhgqvJuij00evoJOOHYDAuYR9cYTZXYy 127.0.0.1 8001 false",
+            "vmArgs": "--add-modules=java.xml.bind,java.activation"
+        },
+        {
+            "projectName": "Solitude",
+            "type": "java",
+            "name": "TreeDB: Performance",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "stopOnEntry": false,
+            "mainClass": "ch.michel.test.TreeDBPerformance",
             "args": "1000 1 AKIAI6DALQXSPRIEAPWQ zerBOTixXhgqvJuij00evoJOOHYDAuYR9cYTZXYy 127.0.0.1 8001",
             "vmArgs": "--add-modules=java.xml.bind,java.activation"
         },

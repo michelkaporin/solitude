@@ -33,7 +33,7 @@ import com.google.gson.JsonParser;
 public class TreeDBBenchmark {
     private static String BASELINE_S3_BUCKET = "treedb-baseline";
     private static DataRepresentation DR = DataRepresentation.CHUNKED_COMPRESSED_ENCRYPTED;
-    private static int[] kChildren = { 2, 4, 16, 32, 64 };
+    private static int[] kChildren;
 
     public static void main(String[] args) throws Exception {
         int maxChunkSize = Integer.valueOf(args[0]);
@@ -41,7 +41,14 @@ public class TreeDBBenchmark {
 		String aws_access_key_id = args[2];
         String aws_secret_access_key = args[3];
         String treedbIP = args[4];
-		int treedbPort = Integer.valueOf(args[5]);
+        int treedbPort = Integer.valueOf(args[5]);
+        boolean varyK = Boolean.valueOf(args[6]);
+        if (varyK) {
+            kChildren = new int[] { 2, 4, 16, 32, 64 };
+        } else {
+            kChildren = new int[] { 2 }; // Have K = 2 as default for kChildren
+        }
+
         SecretKey secretKey = Utility.generateSecretKey();
 
         // Extract and duplicate data to have enough chunks
