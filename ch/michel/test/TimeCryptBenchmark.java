@@ -69,7 +69,7 @@ public class TimeCryptBenchmark {
         AvaData avaData = new AvaData();
         List<Chunk> chunks = avaData.getChunks(maxChunkSize, false, true); // 30 chunks
         List<Chunk> lastChunks = chunks;
-        for (int i = 0; i < 0; i++) { // copy 33 times over to get to 1030 chunks for a better statistical view
+        for (int i = 0; i < 34; i++) { // copy 33 times over to get to 1030 chunks for a better statistical view
             List<Chunk> newChunks = new ArrayList<>();
             lastChunks.forEach(c -> newChunks.add(c.copy(86400*30))); // add 30 days on top of the current data
             chunks.addAll(newChunks); 
