@@ -16,7 +16,7 @@
             "vmArgs": "--add-modules=java.xml.bind,java.activation"
         },
         {
-            "projectName": "treedb",
+            "projectName": "timecrypt",
             "type": "java",
             "name": "HyperDex: Labelled Design vs Range",
             "request": "launch",
@@ -29,36 +29,36 @@
         {
             "projectName": "Solitude",
             "type": "java",
-            "name": "TreeDB: S3 Baseline vs. TreeDB",
+            "name": "TimeCrypt: S3 Baseline vs. TimeCrypt",
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
             "stopOnEntry": false,
-            "mainClass": "ch.michel.test.TreeDBBenchmark",
+            "mainClass": "ch.michel.test.TimeCryptBenchmark",
             "args": "1000 1 AKIAI6DALQXSPRIEAPWQ zerBOTixXhgqvJuij00evoJOOHYDAuYR9cYTZXYy 127.0.0.1 8001 false",
             "vmArgs": "--add-modules=java.xml.bind,java.activation"
         },
         {
             "projectName": "Solitude",
             "type": "java",
-            "name": "TreeDB: TreeDB Baseline vs. TreeDB",
+            "name": "TimeCrypt: TimeCrypt Baseline vs. TimeCrypt",
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
             "stopOnEntry": false,
-            "mainClass": "ch.michel.test.TreeDBBenchmark",
+            "mainClass": "ch.michel.test.TimeCryptBenchmark",
             "args": "1000 1 AKIAI6DALQXSPRIEAPWQ zerBOTixXhgqvJuij00evoJOOHYDAuYR9cYTZXYy 127.0.0.1 8001 false 127.0.0.1 8002",
             "vmArgs": "--add-modules=java.xml.bind,java.activation"
         },
         {
             "projectName": "Solitude",
             "type": "java",
-            "name": "TreeDB: Performance",
+            "name": "TimeCrypt: Performance",
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
             "stopOnEntry": false,
-            "mainClass": "ch.michel.test.TreeDBPerformance",
+            "mainClass": "ch.michel.test.TimeCryptPerformance",
             "args": "1000 1 AKIAI6DALQXSPRIEAPWQ zerBOTixXhgqvJuij00evoJOOHYDAuYR9cYTZXYy 127.0.0.1 8001",
             "vmArgs": "--add-modules=java.xml.bind,java.activation"
         },

@@ -3,8 +3,8 @@ package ch.michel.test;
 import java.math.BigInteger;
 import java.util.Locale;
 import java.util.Random;
-import treedb.client.security.CryptoKeyPair;
-import treedb.client.security.ECElGamalWrapper;
+import timecrypt.client.security.CryptoKeyPair;
+import timecrypt.client.security.ECElGamalWrapper;
 
 public class PaillierVsECElGamal {
 

@@ -45,7 +45,6 @@
 	<classpathentry kind="lib" path="lib/cassandra/lib/jnr-posix-3.0.27.jar"/>
 	<classpathentry kind="lib" path="lib/cassandra/lib/jnr-ffi-2.0.7.jar"/>
 	<classpathentry kind="lib" path="lib/cassandra/lib/guava-19.0.jar"/>
-	<classpathentry kind="lib" path="lib/treedb.client-0.0.1-SNAPSHOT-jar-with-dependencies.jar"/>	
-	<!-- <classpathentry kind="lib" path="/Users/michel/Git/treedb/client/target/treedb.client-0.0.1-SNAPSHOT-jar-with-dependencies.jar"/> -->
+	<classpathentry kind="lib" path="lib/timecrypt.client-0.0.1-SNAPSHOT-jar-with-dependencies.jar"/>	
 	<classpathentry kind="output" path=""/>
 </classpath>
