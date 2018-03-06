@@ -105,10 +105,11 @@ public class TimeCryptPerformance {
                     timecrypt.insert(streamID, c.getPrimaryAttribute(), data, metadata);
                 }
 
-                // Clean state of the experiment
+                // Clean state of the experiment and have a minute wait until the next run
                 timecrypt.delete(streamID);
                 cleanState(chunks, s3, streamID, true);
                 timecrypt.closeConnection();
+                Thread.sleep(60000);
             }
          }
     }

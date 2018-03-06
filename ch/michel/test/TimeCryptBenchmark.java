@@ -288,6 +288,8 @@ public class TimeCryptBenchmark {
             // Print resulting stats and clear them from memory
             printStats("*** Baseline SUM ***", baselineSumStats);
             printStats("*** Baseline MAX ***", baselineMaxStats);
+            baselineSumStats.clear();
+            baselineMaxStats.clear();
 
             for (int j = 0; j < kChildren.length; j++) {
                 System.out.println("\nK = " + kChildren[j] + "\n");
