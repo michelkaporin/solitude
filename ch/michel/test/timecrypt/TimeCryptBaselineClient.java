@@ -3,6 +3,7 @@ package ch.michel.test.timecrypt;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -106,13 +107,35 @@ public class TimeCryptBaselineClient {
             throw e;
         }
         if (numRead == -1) {
-            System.out.println("Failed to read the result of the command.");
             throw new IOException("Failed to read the result of the command.");
         }
 
         byte[] trimmedBytes = new byte[numRead];
         System.arraycopy(buffer.array(), 0, trimmedBytes, 0, numRead);
         
-        return trimmedBytes;
+        byte[] response = trimmedBytes;
+        boolean retryParsing = true;
+        while (retryParsing) {
+            try {
+                jsonParser.parse(new String(response));
+                retryParsing = false;
+            } catch (JsonSyntaxException e) {
+                buffer = ByteBuffer.allocate(5000000);
+                numRead = channel.read(buffer);
+                if (numRead != 0) {
+                    byte[] newBytes = new byte[numRead];
+                    System.arraycopy(buffer.array(), 0, newBytes, 0, numRead);
+
+                    byte[] newResponse = new byte[response.length + newBytes.length];
+                    System.arraycopy(response, 0, newResponse, 0, response.length);
+                    System.arraycopy(newBytes, 0, newResponse, response.length, newBytes.length);
+                    response = newResponse;
+                } else if (numRead == -1) {
+                    throw new IOException("Failed to read the result of the command.");
+                }
+            }
+        }
+
+        return response;
     }
 }
