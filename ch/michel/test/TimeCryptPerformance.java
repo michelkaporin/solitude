@@ -2,9 +2,9 @@ package ch.michel.test;
 
 import ch.lubu.AvaData;
 import timecrypt.client.TimeCrypt;
-import timecrypt.client.security.CryptoKeyPair;
 import timecrypt.client.security.ECElGamalWrapper;
 import timecrypt.client.security.OREWrapper;
+import timecrypt.client.security.PaillierWrapper;
 import timecrypt.client.security.OPEWrapper;
 import ch.lubu.Chunk;
 import ch.michel.DataRepresentation;
@@ -49,7 +49,7 @@ public class TimeCryptPerformance {
         }
 
         S3 s3 = new S3(aws_access_key_id, aws_secret_access_key);
-        CryptoKeyPair keys = CryptoKeyPair.generateKeyPair();
+        PaillierWrapper paillier = new PaillierWrapper();
         ECElGamalWrapper ecelgamal = new ECElGamalWrapper();
         OREWrapper ore = new OREWrapper();
         OPEWrapper ope = new OPEWrapper();
@@ -69,7 +69,7 @@ public class TimeCryptPerformance {
                 String streamID = null;
                 switch (j) {
                     case 0: // Paillier 
-                        streamID = timecrypt.createStream(k, "{ 'sum': true }", keys.publicKey, "S3");
+                        streamID = timecrypt.createStream(k, "{ 'sum': true }", paillier.getPublicKey(), "S3");
                         break;
                     case 1: // EC ElGamal
                         streamID = timecrypt.createStream(k, "{ 'sum': true, 'algorithms': { 'sum': 'ecelgamal' } }", null, "S3");
@@ -90,7 +90,7 @@ public class TimeCryptPerformance {
                     String metadata = null;
                     switch (j) {
                         case 0:
-                            metadata = String.format("{ 'from': %s, 'to': %s, 'sum': %s }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), keys.publicKey.raw_encrypt(plainSum));
+                            metadata = String.format("{ 'from': %s, 'to': %s, 'sum': %s }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), paillier.encrypt(plainSum));
                             break; 
                         case 1:
                             metadata = String.format("{ 'from': %s, 'to': %s, 'sum': '%s' }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), ecelgamal.encryptAndEncode(plainSum));

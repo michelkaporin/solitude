@@ -2,9 +2,9 @@ package ch.michel.test;
 
 import ch.lubu.AvaData;
 import timecrypt.client.TimeCrypt;
-import timecrypt.client.security.CryptoKeyPair;
 import timecrypt.client.security.ECElGamalWrapper;
 import timecrypt.client.security.OREWrapper;
+import timecrypt.client.security.PaillierWrapper;
 import timecrypt.client.security.OPEWrapper;
 import ch.lubu.Chunk;
 import ch.michel.DataRepresentation;
@@ -88,7 +88,7 @@ public class TimeCryptBenchmark {
 
         TimeCrypt timecrypt = new TimeCrypt(timecryptIP, timecryptPort);
         timecrypt.openConnection();
-        CryptoKeyPair keys = CryptoKeyPair.generateKeyPair();
+        PaillierWrapper paillier = new PaillierWrapper();
         ECElGamalWrapper ecelgamal = new ECElGamalWrapper();
         OREWrapper ore = new OREWrapper();
         OPEWrapper ope = new OPEWrapper();
@@ -99,7 +99,7 @@ public class TimeCryptBenchmark {
         List<String> oreStreamsID = new ArrayList<String>();
 
         for (int k : kChildren) {
-            paillierStreamsID.add(timecrypt.createStream(k, "{ 'sum': true }", keys.publicKey, "S3"));
+            paillierStreamsID.add(timecrypt.createStream(k, "{ 'sum': true }", paillier.getPublicKey(), "S3"));
             ecelGamalStreamsID.add(timecrypt.createStream(k, "{ 'sum': true, 'algorithms': { 'sum': 'ecelgamal' } }", null, "S3"));
             opeStreamsID.add(timecrypt.createStream(k, "{ 'max': true }", null, "S3"));
             oreStreamsID.add(timecrypt.createStream(k, "{ 'max': true, 'algorithms': { 'max': 'ore' } }", null, "S3"));
@@ -119,7 +119,7 @@ public class TimeCryptBenchmark {
             }
 
             for (int i = 0; i < kChildren.length; i++) {
-                String paillierSumMetadata = String.format("{ 'from': %s, 'to': %s, 'sum': %s }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), keys.publicKey.raw_encrypt(plainSum));
+                String paillierSumMetadata = String.format("{ 'from': %s, 'to': %s, 'sum': %s }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), paillier.encrypt(plainSum));
                 timecrypt.insert(paillierStreamsID.get(i), c.getPrimaryAttribute(), data, paillierSumMetadata); // append chunk to the index
 
                 String ecelGamalSumMetadata = String.format("{ 'from': %s, 'to': %s, 'sum': '%s' }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), ecelgamal.encryptAndEncode(plainSum));
@@ -239,7 +239,7 @@ public class TimeCryptBenchmark {
                     start = System.nanoTime();
                     JsonParser parser = new JsonParser();
                     JsonObject jObj = parser.parse(stats).getAsJsonObject();
-                    BigInteger decryptedSum = keys.privateKey.raw_decrypt(jObj.get("sum").getAsBigInteger());
+                    BigInteger decryptedSum = paillier.decrypt(jObj.get("sum").getAsBigInteger());
                     float treeDbDecodeTime = timestamp(start);
 
                     paillierStats.get(k).add(new TimeCryptBenchmarkStats("TimeCrypt+S3", treeDbRetrievalTime, treeDbDecodeTime, 0));

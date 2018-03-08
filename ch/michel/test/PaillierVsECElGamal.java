@@ -3,13 +3,13 @@ package ch.michel.test;
 import java.math.BigInteger;
 import java.util.Locale;
 import java.util.Random;
-import timecrypt.client.security.CryptoKeyPair;
 import timecrypt.client.security.ECElGamalWrapper;
+import timecrypt.client.security.PaillierWrapper;
 
 public class PaillierVsECElGamal {
 
     public static void main(String[] args) throws InterruptedException {
-        CryptoKeyPair keys = CryptoKeyPair.generateKeyPair();
+        PaillierWrapper paillier = new PaillierWrapper();
         ECElGamalWrapper ecelgamal = new ECElGamalWrapper();
 
         int timesToRun = 1000;
@@ -25,7 +25,7 @@ public class PaillierVsECElGamal {
 
             /** Encrypt */
             long start = System.nanoTime();
-            BigInteger paillierVal = keys.publicKey.raw_encrypt(plainInt);
+            BigInteger paillierVal = paillier.encrypt(plainInt);
             float encPaillier = timestamp(start);
             sumEncPaillier += encPaillier;
 
@@ -36,7 +36,7 @@ public class PaillierVsECElGamal {
 
             /** Decrypt */
             start = System.nanoTime();
-            keys.privateKey.raw_decrypt(paillierVal);
+            paillier.decrypt(paillierVal);
             float decPaillier = timestamp(start);
             sumDecPaillier += decPaillier;
 
