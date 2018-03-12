@@ -1,7 +1,5 @@
 package ch.lubu;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,20 +18,20 @@ public class AvaData {
 	private List<Chunk> tempSkinUniqueChunks; // Maintain map of chunks with unique second attribute
 	private int cachedBlockSize = -1; // ensure correct block size is cached
 	
-	public List<Chunk> getChunks(int maxBlocksize, boolean tempSkinUnique, boolean sortEntries) {
+	public List<Chunk> getChunks(int maxBlocksize, boolean tempSkinUnique, boolean sortEntries, boolean emptyData) {
 		if (tempSkinUnique) {
 			return this.getTempSkinUniqueChunks(maxBlocksize);
 		}
 		
 		if (this.chunks == null || cachedBlockSize != maxBlocksize) {
-			this.transferData(maxBlocksize, sortEntries);
+			this.transferData(maxBlocksize, sortEntries, emptyData);
 		}
 		
 		return this.chunks;
 	}
 	
 	public List<Chunk> getLabelledChunks(int maxBlocksize, Label label) {
-		List<Entry> entries = importEntries(false);
+		List<Entry> entries = importEntries(false, false);
 		List<Chunk> chunks = new ArrayList<>();
 		
 		Chunk curChunk = Chunk.getNewBlock(maxBlocksize);
@@ -61,17 +59,17 @@ public class AvaData {
 	
 	private List<Chunk> getTempSkinUniqueChunks(int maxBlocksize) {
 		if (this.tempSkinUniqueChunks == null || cachedBlockSize != maxBlocksize) {
-			this.transferData(maxBlocksize, false);
+			this.transferData(maxBlocksize, false, false);
 		}
 		
 		return this.tempSkinUniqueChunks;
 	}
 	
-	private void transferData(int maxBlocksize, boolean sortEntries) {
+	private void transferData(int maxBlocksize, boolean sortEntries, boolean emptyData) {
 		this.counter = 0;
 
 		// Import entries from CSVs
-		List<Entry> entries = importEntries(sortEntries);
+		List<Entry> entries = importEntries(sortEntries, emptyData);
 		if (sortEntries) Collections.sort(entries);
 
 		// Transfer data to chunks
@@ -98,7 +96,7 @@ public class AvaData {
 		this.cachedBlockSize = maxBlocksize;
 	}
 
-	private List<Entry> importEntries(boolean sortEntries) {
+	private List<Entry> importEntries(boolean sortEntries, boolean emptyData) {
 		List<Entry> entries = new ArrayList<>();
 		
 		AvaDataImporter importer;
@@ -107,12 +105,15 @@ public class AvaData {
 				importer = new AvaDataImporter("./DATA", csvIndex);
 				while (importer.hasNext()) {
 					AvaDataEntry entry = importer.next();
-					byte[] entryData = String.format("accel_z: %s,activity_index: %s,app_frame_no: %s,"
+					byte[] entryData = null;
+					if (!emptyData) {
+						entryData = String.format("accel_z: %s,activity_index: %s,app_frame_no: %s,"
 							+ "impedance_60kHz: %s,perfusion_index_green: %s,perfusion_index_infrared: %s,"
 							+ "phase_60kHz: %s,rr_quality: %s,sleep_state: %s,temp_amb: %s,", 
 							entry.accel_z, entry.activity_index, entry.app_frame_no, entry.impedance_60kHz, 
 							entry.perfusion_index_green, entry.perfusion_index_infrared, entry.phase_60kHz,
 							entry.rr_quality, entry.sleep_state, entry.temp_amb).getBytes(); // can be stored as JSON instead.
+					}
 					entries.add(new Entry(entry.time_stamp, entry.temp_skin, entryData));
 				}
 

@@ -31,8 +31,8 @@ public class LabelledDesign {
 		secretKey = Utility.generateSecretKey(); // Generate secret key for encrypted data representation
 		HyperDex hd = new HyperDex();
 
-		List<Chunk> chunks = avaData.getChunks(maxChunkSize, false, false);
-		List<Chunk> plainEntries = avaData.getChunks(1, false, false);
+		List<Chunk> chunks = avaData.getChunks(maxChunkSize, false, false, false);
+		List<Chunk> plainEntries = avaData.getChunks(1, false, false, false);
 		List<Label> labels = Utility.getTempLabels(chunks, 3);
 
 		// Create HyperSpaces in HyperDex

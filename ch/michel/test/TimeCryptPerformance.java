@@ -39,13 +39,17 @@ public class TimeCryptPerformance {
 
         // Extract and duplicate data to have enough chunks
         AvaData avaData = new AvaData();
-        List<Chunk> chunks = avaData.getChunks(maxChunkSize, false, true); // 30 chunks
+        List<Chunk> chunks = avaData.getChunks(maxChunkSize, false, true, true); // 30 chunks
         List<Chunk> lastChunks = chunks;
         for (int i = 0; i < 34; i++) { // copy 34 times over to get to 1030 chunks for a better statistical view
             List<Chunk> newChunks = new ArrayList<>();
-            lastChunks.forEach(c -> newChunks.add(c.copy(86400*30))); // add 30 days on top of the current data
-            chunks.addAll(newChunks); 
+            for (Chunk c : lastChunks) {
+                newChunks.add(c.copy(86400*30)); // add 30 days on top of the current data
+            }
+            chunks.addAll(newChunks);
             lastChunks = newChunks;
+            newChunks = null;
+            if (i % 10000 == 0) System.out.println("Added " + i); System.gc();
         }
 
         S3 s3 = new S3(aws_access_key_id, aws_secret_access_key);

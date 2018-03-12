@@ -37,7 +37,7 @@ public class AmazonS3 {
 		DataRepresentation dr = DataRepresentation.CHUNKED_COMPRESSED_ENCRYPTED;
 		String bucket = "hyperdex";
 		
-		List<Chunk> chunks = avaData.getChunks(maxChunkSize, false, false);
+		List<Chunk> chunks = avaData.getChunks(maxChunkSize, false, false, false);
 		Map<String, Chunk> chunksToDelete = new HashMap<String, Chunk>();
 
 		for (int i = 0; i < experimentReps; i++) {

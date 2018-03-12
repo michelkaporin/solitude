@@ -36,6 +36,7 @@ public class TimeCryptBenchmark {
     private static String BASELINE_S3_BUCKET = "timecrypt-baseline";
     private static DataRepresentation DR = DataRepresentation.CHUNKED_COMPRESSED_ENCRYPTED;
     private static int[] kChildren;
+    private static String streamStorage = null;
 
     public static void main(String[] args) throws Exception {
         int maxChunkSize = Integer.valueOf(args[0]);
@@ -57,6 +58,11 @@ public class TimeCryptBenchmark {
             s3Baseline = true;
         }
 
+        try {
+            if (s3Baseline) streamStorage = args[7];
+            else streamStorage = args[9];
+        } catch (Exception e) { }
+
         if (varyK) {
             kChildren = new int[] { 2, 4, 16, 32, 64 };
         } else {
@@ -67,9 +73,9 @@ public class TimeCryptBenchmark {
 
         // Extract and duplicate data to have enough chunks
         AvaData avaData = new AvaData();
-        List<Chunk> chunks = avaData.getChunks(maxChunkSize, false, true); // 30 chunks
+        List<Chunk> chunks = avaData.getChunks(maxChunkSize, false, true, true); // 30 chunks
         List<Chunk> lastChunks = chunks;
-        for (int i = 0; i < 34; i++) { // copy 33 times over to get to 1030 chunks for a better statistical view
+        for (int i = 0; i < 0; i++) { // copy 33 times over to get to 1030 chunks for a better statistical view
             List<Chunk> newChunks = new ArrayList<>();
             lastChunks.forEach(c -> newChunks.add(c.copy(86400*30))); // add 30 days on top of the current data
             chunks.addAll(newChunks); 
@@ -99,10 +105,10 @@ public class TimeCryptBenchmark {
         List<String> oreStreamsID = new ArrayList<String>();
 
         for (int k : kChildren) {
-            paillierStreamsID.add(timecrypt.createStream(k, "{ 'sum': true }", paillier.getPublicKey(), "S3"));
-            ecelGamalStreamsID.add(timecrypt.createStream(k, "{ 'sum': true, 'algorithms': { 'sum': 'ecelgamal' } }", null, "S3"));
-            opeStreamsID.add(timecrypt.createStream(k, "{ 'max': true }", null, "S3"));
-            oreStreamsID.add(timecrypt.createStream(k, "{ 'max': true, 'algorithms': { 'max': 'ore' } }", null, "S3"));
+            paillierStreamsID.add(timecrypt.createStream(k, "{ 'sum': true }", paillier.getPublicKey(), streamStorage));
+            ecelGamalStreamsID.add(timecrypt.createStream(k, "{ 'sum': true, 'algorithms': { 'sum': 'ecelgamal' } }", null, streamStorage));
+            opeStreamsID.add(timecrypt.createStream(k, "{ 'max': true }", null, streamStorage));
+            oreStreamsID.add(timecrypt.createStream(k, "{ 'max': true, 'algorithms': { 'max': 'ore' } }", null, streamStorage));
         }
 
         // Populate S3/TimeCrypt-Baseline and TimeCrypt
