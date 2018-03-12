@@ -102,7 +102,12 @@ public class TimeCryptPerformance {
                             metadata = String.format("{ 'from': %s, 'to': %s, 'max': '%s' }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), ore.encryptAndEncode(plainSum));
                             break;
                     }
-                    timecrypt.insert(streamID, c.getPrimaryAttribute(), data, metadata);
+
+                    boolean success = timecrypt.insert(streamID, c.getPrimaryAttribute(), data, metadata);
+                    if (!success){
+                        System.out.println("Run into exception, stopping the insert, moving on to the next stream type.");
+                        break;
+                    }
                 }
 
                 // Clean state of the experiment and have a minute wait until the next run
