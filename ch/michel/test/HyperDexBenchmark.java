@@ -36,7 +36,7 @@ public class HyperDexBenchmark {
 		
 		for (int blockSize : maxBlockSize) {
 			for (boolean twoDimensional : twoDimensions) {
-				List<Chunk> chunks = avaData.getChunks(blockSize, twoDimensional, false, false);
+				List<Chunk> chunks = avaData.getChunks(blockSize, twoDimensional, false);
 
 				// Optimise chunking, compression and encryption computations
 				int totalSizeBase = 0;

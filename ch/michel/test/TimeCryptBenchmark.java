@@ -73,7 +73,7 @@ public class TimeCryptBenchmark {
 
         // Extract and duplicate data to have enough chunks
         AvaData avaData = new AvaData();
-        List<Chunk> chunks = avaData.getChunks(maxChunkSize, false, true, true); // 30 chunks
+        List<Chunk> chunks = avaData.getChunks(maxChunkSize, false, true); // 30 chunks
         List<Chunk> lastChunks = chunks;
         for (int i = 0; i < 0; i++) { // copy 33 times over to get to 1030 chunks for a better statistical view
             List<Chunk> newChunks = new ArrayList<>();

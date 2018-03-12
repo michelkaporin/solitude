@@ -68,8 +68,8 @@ public class MainBenchmark {
 		// Setup phase
 		AvaData avaData = new AvaData();
 		SecretKey secretKey = Utility.generateSecretKey();
-		List<Chunk> chunks = avaData.getChunks(maxChunkSize, false, false, false);
-		List<Chunk> singleEntryChunks = avaData.getChunks(1, false, false, false);
+		List<Chunk> chunks = avaData.getChunks(maxChunkSize, false, false);
+		List<Chunk> singleEntryChunks = avaData.getChunks(1, false, false);
 		List<Label> labels = Utility.getTempLabels(chunks, 3); // obtain labels for produced chunks
 		
 		HyperDex hd = new HyperDex(hyperdexIP, hyperdexPort);

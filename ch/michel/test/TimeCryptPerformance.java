@@ -6,7 +6,7 @@ import timecrypt.client.security.ECElGamalWrapper;
 import timecrypt.client.security.OREWrapper;
 import timecrypt.client.security.PaillierWrapper;
 import timecrypt.client.security.OPEWrapper;
-import ch.lubu.Chunk;
+import ch.lubu.ChunkWrapper;
 import ch.michel.DataRepresentation;
 import ch.michel.S3;
 import ch.michel.Utility;
@@ -35,21 +35,33 @@ public class TimeCryptPerformance {
         String aws_secret_access_key = args[3];
         String timecryptIP = args[4];
         int timecryptPort = Integer.valueOf(args[5]);
+        boolean fakeData = Boolean.valueOf(args[6]);
+        
         SecretKey secretKey = Utility.generateSecretKey();
 
         // Extract and duplicate data to have enough chunks
-        AvaData avaData = new AvaData();
-        List<Chunk> chunks = avaData.getChunks(maxChunkSize, false, true, true); // 30 chunks
-        List<Chunk> lastChunks = chunks;
-        for (int i = 0; i < 34; i++) { // copy 34 times over to get to 1030 chunks for a better statistical view
-            List<Chunk> newChunks = new ArrayList<>();
-            for (Chunk c : lastChunks) {
-                newChunks.add(c.copy(86400*30)); // add 30 days on top of the current data
+        List<ChunkWrapper> chunks = new ArrayList<ChunkWrapper>();
+        if (fakeData) {
+            long start = 1;
+            long end = 1000;
+            for (int i=0; i < 2000000; i++) { // huge load experiment
+                chunks.add(new ChunkWrapper(start, end));
+                start += 1000;
+                end += 1000;
             }
-            chunks.addAll(newChunks);
-            lastChunks = newChunks;
-            newChunks = null;
-            if (i % 10000 == 0) System.out.println("Added " + i); System.gc();
+        } else {
+            AvaData avaData = new AvaData();            
+            chunks = ChunkWrapper.getWrappers(avaData.getChunks(maxChunkSize, false, true)); // 30 chunks
+            List<ChunkWrapper> lastChunks = chunks;
+            for (int i = 0; i < 34; i++) { // copy 34 times over to get to 1030 chunks for a better statistical view
+                List<ChunkWrapper> newChunks = new ArrayList<>();
+                for (ChunkWrapper c : lastChunks) {
+                    newChunks.add(c.copy(86400*30)); // add 30 days on top of the current data
+                }
+                chunks.addAll(newChunks);
+                lastChunks = newChunks;
+                newChunks = null;
+            }
         }
 
         S3 s3 = new S3(aws_access_key_id, aws_secret_access_key);
@@ -73,37 +85,37 @@ public class TimeCryptPerformance {
                 String streamID = null;
                 switch (j) {
                     case 0: // Paillier 
-                        streamID = timecrypt.createStream(k, "{ 'sum': true }", paillier.getPublicKey(), "S3");
+                        streamID = timecrypt.createStream(k, "{ 'sum': true }", paillier.getPublicKey(), null);
                         break;
                     case 1: // EC ElGamal
-                        streamID = timecrypt.createStream(k, "{ 'sum': true, 'algorithms': { 'sum': 'ecelgamal' } }", null, "S3");
+                        streamID = timecrypt.createStream(k, "{ 'sum': true, 'algorithms': { 'sum': 'ecelgamal' } }", null, null);
                         break;
                     case 2: // OPE
-                        streamID = timecrypt.createStream(k, "{ 'max': true }", null, "S3");
+                        streamID = timecrypt.createStream(k, "{ 'max': true }", null, null);
                         break;
                     case 3: // ORE
-                        streamID = timecrypt.createStream(k, "{ 'max': true, 'algorithms': { 'max': 'ore' } }", null, "S3");
+                        streamID = timecrypt.createStream(k, "{ 'max': true, 'algorithms': { 'max': 'ore' } }", null, null);
                         break;
                 }
 
                 // Populate TimeCrypt
-                for (Chunk c : chunks) {
+                for (ChunkWrapper c : chunks) {
                     byte[] data = c.serialise(DR, Optional.of(secretKey));
                     BigInteger plainSum = c.getSum();
 
                     String metadata = null;
                     switch (j) {
                         case 0:
-                            metadata = String.format("{ 'from': %s, 'to': %s, 'sum': %s }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), paillier.encrypt(plainSum));
+                            metadata = String.format("{ 'from': %s, 'to': %s, 'sum': %s }", c.getFirstEntryTimestamp(), c.getLastEntryTimestamp(), paillier.encrypt(plainSum));
                             break; 
                         case 1:
-                            metadata = String.format("{ 'from': %s, 'to': %s, 'sum': '%s' }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), ecelgamal.encryptAndEncode(plainSum));
+                            metadata = String.format("{ 'from': %s, 'to': %s, 'sum': '%s' }", c.getFirstEntryTimestamp(), c.getLastEntryTimestamp(), ecelgamal.encryptAndEncode(plainSum));
                             break;
                         case 2: 
-                            metadata = String.format("{ 'from': %s, 'to': %s, 'max': %s }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), ope.encrypt(plainSum));
+                            metadata = String.format("{ 'from': %s, 'to': %s, 'max': %s }", c.getFirstEntryTimestamp(), c.getLastEntryTimestamp(), ope.encrypt(plainSum));
                             break;
                         case 3:
-                            metadata = String.format("{ 'from': %s, 'to': %s, 'max': '%s' }", c.getFirstEntry().getTimestamp(), c.getLastEntry().getTimestamp(), ore.encryptAndEncode(plainSum));
+                            metadata = String.format("{ 'from': %s, 'to': %s, 'max': '%s' }", c.getFirstEntryTimestamp(), c.getLastEntryTimestamp(), ore.encryptAndEncode(plainSum));
                             break;
                     }
 
@@ -116,16 +128,16 @@ public class TimeCryptPerformance {
 
                 // Clean state of the experiment and have a minute wait until the next run
                 timecrypt.delete(streamID);
-                cleanState(chunks, s3, streamID, true);
+                if (!fakeData) cleanState(chunks, s3, streamID, true);
                 timecrypt.closeConnection();
                 Thread.sleep(60000);
             }
          }
     }
 
-	private static void cleanState(List<Chunk> chunks, S3 s3, String bucketName, boolean deleteBucket) {
-        for (Chunk c : chunks) {
-            s3.del(c, bucketName);
+	private static void cleanState(List<ChunkWrapper> chunks, S3 s3, String bucketName, boolean deleteBucket) {
+        for (ChunkWrapper c : chunks) {
+            s3.del(c.getChunk(), bucketName);
         }
         if (deleteBucket) s3.deleteBucket(bucketName);        
     }
