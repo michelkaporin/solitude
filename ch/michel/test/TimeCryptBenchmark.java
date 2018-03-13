@@ -64,7 +64,7 @@ public class TimeCryptBenchmark {
         } catch (Exception e) { }
 
         if (varyK) {
-            kChildren = new int[] { 2, 4, 16, 32, 64 };
+            kChildren = new int[] { 2, 4, 8, 16, 32, 64 };
         } else {
             kChildren = new int[] { 2 }; // Have K = 2 as default for kChildren
         }
