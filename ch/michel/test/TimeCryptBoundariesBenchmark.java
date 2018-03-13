@@ -6,12 +6,16 @@ import timecrypt.client.security.OREWrapper;
 import timecrypt.client.security.PaillierWrapper;
 import timecrypt.client.security.OPEWrapper;
 import ch.lubu.ChunkWrapper;
+import ch.michel.Utility;
+import ch.michel.test.timecrypt.BaselineMetadata;
+import ch.michel.test.timecrypt.TimeCryptBaselineClient;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import javax.crypto.SecretKey;
 
 /**
  * 
@@ -28,6 +32,12 @@ public class TimeCryptBoundariesBenchmark {
         String timecryptIP = args[0];
         int timecryptPort = Integer.valueOf(args[1]);
         int algorithmID = Integer.valueOf(args[2]);
+
+        String trdbBaselineIP = null; int trdbBaselinePort = 8002;
+        try {
+            trdbBaselineIP = args[3];
+            trdbBaselinePort = Integer.valueOf(args[4]);
+        } catch (Exception e) {}
         
         // Extract and duplicate data to have enough chunks
         List<ChunkWrapper> chunks = new ArrayList<ChunkWrapper>();
@@ -46,6 +56,12 @@ public class TimeCryptBoundariesBenchmark {
 
         TimeCrypt timecrypt = new TimeCrypt(timecryptIP, timecryptPort);
         timecrypt.openConnection();
+
+        TimeCryptBaselineClient trdbBaseline = null; SecretKey secretKey = null;
+        if (algorithmID == 4) { 
+            secretKey = Utility.generateSecretKey();
+            trdbBaseline = new TimeCryptBaselineClient(trdbBaselineIP, trdbBaselinePort);
+        }
 
         String streamID = null;
         switch (algorithmID) { // 1: Paillier, 2: EC ElGamal, 3: OPE, 4: ORE
@@ -82,9 +98,18 @@ public class TimeCryptBoundariesBenchmark {
                 case 3:
                     metadata = String.format("{ 'from': %s, 'to': %s, 'max': '%s' }", c.getFirstEntryTimestamp(), c.getLastEntryTimestamp(), ore.encryptAndEncode(plainSum));
                     break;
+                case 4: // Baseline
+                case 5:
+                    metadata = new BaselineMetadata(String.format("{ 'sum': %s, 'max': %s }", plainSum.toString(), plainSum.toString())).getEncodedEncryptedData(secretKey.getEncoded());
+                    break;
             }
 
-            boolean success = timecrypt.insert(streamID, c.getPrimaryAttribute(), data, metadata);
+            boolean success = true;
+            if (algorithmID == 4) {
+                trdbBaseline.insert(c.getFirstEntryTimestamp(), c.getLastEntryTimestamp(), metadata);
+            } else {
+                success = timecrypt.insert(streamID, c.getPrimaryAttribute(), data, metadata);
+            }
             if (!success){
                 System.out.println("Run into exception, stopping the insert, moving on to the next stream type.");
                 break;
@@ -93,7 +118,7 @@ public class TimeCryptBoundariesBenchmark {
 
          for (int j = 0; j < chunks.size(); j++) {
             switch (algorithmID) {
-                case 0:
+                case 0: {
                     // GET Paillier sum
                     start = System.nanoTime();
                     String stats = timecrypt.getStatistics(streamID, chunks.get(0).getFirstEntryTimestamp(), chunks.get(j).getLastEntryTimestamp());
@@ -107,53 +132,113 @@ public class TimeCryptBoundariesBenchmark {
 
                     print("Paillier", treeDbRetrievalTime, treeDbDecodeTime, 0);
                     break;
-                case 1:
+                }
+                case 1: {
                     // GET EC El Gamal Sum
                     start = System.nanoTime();
-                    stats = timecrypt.getStatistics(streamID, chunks.get(0).getFirstEntryTimestamp(), chunks.get(j).getLastEntryTimestamp());
-                    treeDbRetrievalTime = timestamp(start);
+                    String stats = timecrypt.getStatistics(streamID, chunks.get(0).getFirstEntryTimestamp(), chunks.get(j).getLastEntryTimestamp());
+                    float treeDbRetrievalTime = timestamp(start);
                     
                     start = System.nanoTime();
-                    parser = new JsonParser();
-                    jObj = parser.parse(stats).getAsJsonObject();
+                    JsonParser parser = new JsonParser();
+                    JsonObject jObj = parser.parse(stats).getAsJsonObject();
                     BigInteger decryptedSum2 = ecelgamal.decodeAndDecrypt(jObj.get("sum").getAsString());
-                    treeDbDecodeTime = timestamp(start);
+                    float treeDbDecodeTime = timestamp(start);
 
                     print("EC ElGamal", treeDbRetrievalTime, treeDbDecodeTime, 0);
                     break;
-                case 2:
+                }
+                case 2: {
                     // GET OPE Max
                     start = System.nanoTime();
-                    stats = timecrypt.getStatistics(streamID, chunks.get(0).getFirstEntryTimestamp(), chunks.get(j).getLastEntryTimestamp());
-                    treeDbRetrievalTime = timestamp(start);
+                    String stats = timecrypt.getStatistics(streamID, chunks.get(0).getFirstEntryTimestamp(), chunks.get(j).getLastEntryTimestamp());
+                    float treeDbRetrievalTime = timestamp(start);
                     
                     start = System.nanoTime();
-                    parser = new JsonParser();
-                    jObj = parser.parse(stats).getAsJsonObject();
+                    JsonParser parser = new JsonParser();
+                    JsonObject jObj = parser.parse(stats).getAsJsonObject();
                     BigInteger decryptedMax = ope.decrypt(jObj.get("max").getAsBigInteger());
-                    treeDbDecodeTime = timestamp(start);
+                    float treeDbDecodeTime = timestamp(start);
 
                     print("OPE", treeDbRetrievalTime, treeDbDecodeTime, 0);
                     break;
-                case 3:
+                }
+                case 3: {
                     // GET ORE Max
                     start = System.nanoTime();
-                    stats = timecrypt.getStatistics(streamID, chunks.get(0).getFirstEntryTimestamp(), chunks.get(j).getLastEntryTimestamp());
-                    treeDbRetrievalTime = timestamp(start);
+                    String stats = timecrypt.getStatistics(streamID, chunks.get(0).getFirstEntryTimestamp(), chunks.get(j).getLastEntryTimestamp());
+                    float treeDbRetrievalTime = timestamp(start);
                     
                     start = System.nanoTime();
-                    parser = new JsonParser();
-                    jObj = parser.parse(stats).getAsJsonObject();
+                    JsonParser parser = new JsonParser();
+                    JsonObject jObj = parser.parse(stats).getAsJsonObject();
                     BigInteger decryptedMax2 = ore.decodeAndDecrypt(jObj.get("max").getAsString());
-                    treeDbDecodeTime = timestamp(start);
+                    float treeDbDecodeTime = timestamp(start);
 
                     print("ORE", treeDbRetrievalTime, treeDbDecodeTime, 0);
                     break;
+                }
+                case 4: {
+                    // GET Baseline SUM
+                    start = System.nanoTime();
+                    List<byte[]> metadataList = trdbBaseline.getRange(chunks.get(0).getFirstEntryTimestamp(), chunks.get(j).getLastEntryTimestamp());
+                    float retrievalTime = timestamp(start);
+
+                    List<String> metadataStrings = new ArrayList<>();
+                    start = System.nanoTime();
+                    for (byte[] md : metadataList) {
+                        String metadata = BaselineMetadata.decryptMetadata(md, secretKey.getEncoded());
+                        metadataStrings.add(metadata);
+                    }
+                    float decodeDecryptTime = timestamp(start);
+
+                    // Compute sum
+                    start = System.nanoTime();
+                    JsonParser parser = new JsonParser();
+                    JsonObject jObj = null;
+                    BigInteger sum = BigInteger.ZERO;
+                    for (String md : metadataStrings) {
+                        jObj = parser.parse(md).getAsJsonObject();
+                        sum = sum.add(jObj.get("sum").getAsBigInteger());
+                    }
+                    float sumComputationTime = timestamp(start);
+                    print("TimeCrypt Baseline Max", retrievalTime, decodeDecryptTime, sumComputationTime);
+                    break;
+                }
+                case 5: {
+                    // GET Baseline MAX
+                    // GET Baseline SUM
+                    start = System.nanoTime();
+                    List<byte[]> metadataList = trdbBaseline.getRange(chunks.get(0).getFirstEntryTimestamp(), chunks.get(j).getLastEntryTimestamp());
+                    float retrievalTime = timestamp(start);
+
+                    List<String> metadataStrings = new ArrayList<>();
+                    start = System.nanoTime();
+                    for (byte[] md : metadataList) {
+                        String metadata = BaselineMetadata.decryptMetadata(md, secretKey.getEncoded());
+                        metadataStrings.add(metadata);
+                    }
+                    float decodeDecryptTime = timestamp(start);
+
+                    // Compute max
+                    start = System.nanoTime();
+                    JsonParser parser = new JsonParser();
+                    BigInteger max = BigInteger.ZERO;
+                    for (String md : metadataStrings) {
+                        JsonObject jObj = parser.parse(md).getAsJsonObject();
+                        max = max.max(jObj.get("max").getAsBigInteger());
+                    }
+                    float maxComputationTime = timestamp(start);
+
+                    print("TimeCrypt Baseline Max", retrievalTime, decodeDecryptTime, maxComputationTime);
+                    break;
+                }
             }
         }
 
         timecrypt.delete(streamID);
         timecrypt.closeConnection();
+        if (trdbBaseline != null) trdbBaseline.closeConnection();
     }
 
     private static float timestamp(long start) {
