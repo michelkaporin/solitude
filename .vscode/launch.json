@@ -83,6 +83,20 @@
             "console": "internalConsole",
             "stopOnEntry": false,
             "mainClass": "ch.michel.test.PaillierVsECElGamal"
+        },
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "pythonPath":"${config:python.pythonPath}",
+            "program": "${file}",
+            "cwd": "${workspaceFolder}/analysis/plots",
+            "env": {},
+            "envFile": "${workspaceFolder}/.env",
+            "debugOptions": [
+                "RedirectOutput"
+            ]
         }
     ]
 }
