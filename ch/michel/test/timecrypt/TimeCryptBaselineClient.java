@@ -82,7 +82,7 @@ public class TimeCryptBaselineClient {
             System.out.println("Failed to perform operation: " + exception);
             throw new IOException(exception);
         } catch (NullPointerException | JsonParseException | IllegalStateException e) {
-            return apiResult;
+        return apiResult;
         }
     }
 
