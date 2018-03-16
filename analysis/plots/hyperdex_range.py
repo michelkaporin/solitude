@@ -87,9 +87,8 @@ ax.xaxis.set_major_formatter(FuncFormatter(format_fn))
 ax.xaxis.set_major_locator(MaxNLocator(nbins=10, prune=None))
 plt.xticks(rotation=75)
 
-plt.ylabel('Time in milliseconds [ms]')
-plt.xlabel('Intervals')
-plt.ylim(0)
+plt.ylabel('Time [ms]')
+plt.xlabel('Chunk interval')
 
 plt.grid(True, linestyle=':', color='0.8', zorder=0)
 F = plt.gcf()

@@ -74,15 +74,14 @@ rects1 = ax1.bar(ind, mean_c, width, color='0.25', yerr=std_c, error_kw=dict(eco
 rects2 = ax1.bar(ind + width, mean_cc, width, color='0.50', yerr=std_cc, error_kw=dict(ecolor='0.00', lw=2, capsize=5, capthick=2))
 rects3 = ax1.bar(ind + 2*width, mean_ccc, width, color='0.75', yerr=std_ccc, error_kw=dict(ecolor='0.25', lw=2, capsize=5, capthick=2))
 
-
-ax1.set_ylabel("Time in milliseconds [ms]")
+ax1.set_ylabel("Time [ms]")
 ax1.set_xticks(ind + width)
 ax1.set_xticklabels(types)
 ax1.set_xlabel("Block size n, dimensionality")
+ax1.grid(True, linestyle=':', color='0.8', zorder=0)
 
 ax1.legend((rects1[0], rects2[0], rects3[0]), ('Chunked', 'Chunked, compressed', 'Chunked, compressed, encrypted'), loc="upper left")
 
-# f.suptitle("RTT-%d average latency DHT operations" % latency, fontsize=24, y=1.02)
 plt.axis('tight')
 
 F = plt.gcf()
