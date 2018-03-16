@@ -77,12 +77,12 @@
         {
             "projectName": "Solitude",
             "type": "java",
-            "name": "Paillier vs. EC ElGamal",
+            "name": "Crypto algorithms comparison",
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
             "stopOnEntry": false,
-            "mainClass": "ch.michel.test.PaillierVsECElGamal"
+            "mainClass": "ch.michel.test.CryptoComparison"
         },
         {
             "name": "Python: Current File",
