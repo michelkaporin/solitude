@@ -110,11 +110,11 @@ public class CryptoComparison {
             float operationOre = timestamp(start);
             sumOperationOre += operationOre;
 
-            System.out.format("Enc(Paillier): %s\tEnc(EC ElGamal): %s\tEnc(OPE): %s\tEnc(ORE): %s\n", format(encPaillier/timesToRun), format(encECElGamal/timesToRun), format(encOpe/timesToRun), format(encOre/timesToRun));
+            System.out.format("Enc(Paillier): %s\tEnc(EC ElGamal): %s\tEnc(OPE): %s\tEnc(ORE): %s\n", format(encPaillier), format(encECElGamal), format(encOpe), format(encOre));
 
-            System.out.format("Dec(Paillier): %s\tDec(EC ElGamal): %s\tDec(OPE): %s\tDec(ORE): %s\n", format(decPaillier/timesToRun), format(decECElGamal/timesToRun), format(decOpe/timesToRun), format(decOre/timesToRun));
+            System.out.format("Dec(Paillier): %s\tDec(EC ElGamal): %s\tDec(OPE): %s\tDec(ORE): %s\n", format(decPaillier), format(decECElGamal), format(decOpe), format(decOre));
     
-            System.out.format("Operation(Paillier): %s\tOperation(EC ElGamal): %s\tOperation(OPE): %s\tOperation(ORE): %s\n", format(operationPaillier/timesToRun), format(operationEcelgamal/timesToRun), format(operationOpe/timesToRun), format(operationOre/timesToRun));    
+            System.out.format("Operation(Paillier): %s\tOperation(EC ElGamal): %s\tOperation(OPE): %s\tOperation(ORE): %s\n", format(operationPaillier), format(operationEcelgamal), format(operationOpe), format(operationOre));    
         }
 
         System.out.println("AVERAGED");
