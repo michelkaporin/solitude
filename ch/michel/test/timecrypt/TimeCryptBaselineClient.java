@@ -98,7 +98,7 @@ public class TimeCryptBaselineClient {
             throw e;
         }
 
-        buffer = ByteBuffer.allocate(5000000);  // 5 MB buffer max
+        buffer = ByteBuffer.allocate(262144000);  // 250 MB buffer max for boundaries experiment
         int numRead = 0;
         try {
             numRead = channel.read(buffer);
