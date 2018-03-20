@@ -20,6 +20,7 @@ public class TimeCryptBaselineClient {
     private SocketChannel channel;
 
     private JsonParser jsonParser;
+    private ByteBuffer readBuffer = ByteBuffer.allocate(1073741824); // 1 GB buffer
 
     public TimeCryptBaselineClient(String ip, int port) {
         this.ip = ip;
@@ -98,10 +99,10 @@ public class TimeCryptBaselineClient {
             throw e;
         }
 
-        buffer = ByteBuffer.allocate(262144000);  // 250 MB buffer max for boundaries experiment
+        readBuffer.clear();  // 250 MB buffer max for boundaries experiment
         int numRead = 0;
         try {
-            numRead = channel.read(buffer);
+            numRead = channel.read(readBuffer);
         } catch (IOException e) {
             System.out.println("Failed to read the result of the command.");
             throw e;
@@ -111,7 +112,7 @@ public class TimeCryptBaselineClient {
         }
 
         byte[] trimmedBytes = new byte[numRead];
-        System.arraycopy(buffer.array(), 0, trimmedBytes, 0, numRead);
+        System.arraycopy(readBuffer.array(), 0, trimmedBytes, 0, numRead);
         
         byte[] response = trimmedBytes;
         boolean retryParsing = true;
@@ -120,11 +121,11 @@ public class TimeCryptBaselineClient {
                 jsonParser.parse(new String(response));
                 retryParsing = false;
             } catch (JsonSyntaxException e) {
-                buffer = ByteBuffer.allocate(5000000);
-                numRead = channel.read(buffer);
+                readBuffer.clear();
+                numRead = channel.read(readBuffer);
                 if (numRead != 0) {
                     byte[] newBytes = new byte[numRead];
-                    System.arraycopy(buffer.array(), 0, newBytes, 0, numRead);
+                    System.arraycopy(readBuffer.array(), 0, newBytes, 0, numRead);
 
                     byte[] newResponse = new byte[response.length + newBytes.length];
                     System.arraycopy(response, 0, newResponse, 0, response.length);
