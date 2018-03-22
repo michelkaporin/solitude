@@ -50,7 +50,7 @@ public class TimeCryptBoundariesBenchmark {
         List<ChunkWrapper> chunks = new ArrayList<ChunkWrapper>();
         long start = 1;
         long end = 1000;
-        for (int i = 0; i < 1500000; i++) { // huge load experiment
+        for (int i = 0; i < 800000; i++) { // huge load experiment
             chunks.add(new ChunkWrapper(start, end));
             start += 1000;
             end += 1000;
@@ -115,13 +115,11 @@ public class TimeCryptBoundariesBenchmark {
                     break;
                 case 4: // Baseline sum
                     metadata = new BaselineMetadata(
-                            String.format("{ 'sum': %s, 'max': %s }", plainSum.toString(), plainSum.toString()))
-                                    .getEncodedEncryptedData(secretKey.getEncoded());
+                            String.format("{ 'sum': %s }", plainSum.toString())).getEncodedEncryptedData(secretKey.getEncoded());
                     break;
                 case 5: // Baseline max
                     metadata = new BaselineMetadata(
-                            String.format("{ 'max': %s }", plainSum.toString(), plainSum.toString()))
-                                    .getEncodedEncryptedData(secretKey.getEncoded());
+                            String.format("{ 'max': %s }", plainSum.toString())).getEncodedEncryptedData(secretKey.getEncoded());
                     break;
                 }
 
