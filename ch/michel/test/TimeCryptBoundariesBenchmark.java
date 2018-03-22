@@ -67,10 +67,12 @@ public class TimeCryptBoundariesBenchmark {
         TimeCryptBaselineClient trdbBaseline = null;
         SecretKey secretKey = null;
         for (int algorithmID : algorithmIDs) {
-            if (algorithmID == 4) {
-                secretKey = Utility.generateSecretKey();
-                trdbBaseline = new TimeCryptBaselineClient(trdbBaselineIP, trdbBaselinePort);
-                trdbBaseline.openConnection();
+            if (algorithmID == 4 || algorithmID == 5) {
+                if (secretKey == null) secretKey = Utility.generateSecretKey();
+                if (trdbBaseline == null) {
+                    trdbBaseline = new TimeCryptBaselineClient(trdbBaselineIP, trdbBaselinePort);
+                    trdbBaseline.openConnection();
+                }
             }
 
             String streamID = null;
