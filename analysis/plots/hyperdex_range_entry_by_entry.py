@@ -21,7 +21,7 @@ def aggregate():
     return vals.mean(axis=0)
 
 
-with open("../thesis_prepared_raw_data/hyperdex_benchmark_4_1000_3.log") as file:
+with open("../thesis_prepared_raw_data/hyperdex_benchmark_range_entry_by_entry.log") as file:
     for _ in xrange(5):
         next(file)  # Skip header lines until the first data
 
@@ -69,7 +69,7 @@ params = {'backend': 'ps',
           'figure.figsize': fig_size,
           'font.family': 'times new roman'}
 
-pdf_pages = PdfPages('images/hyperdex_range.pdf')
+pdf_pages = PdfPages('images/hyperdex_range_entry_by_entry.pdf')
 
 plt.rcParams.update(params)
 plt.axes([0.12, 0.32, 0.85, 0.63], frameon=True)
@@ -87,7 +87,7 @@ ax.xaxis.set_major_locator(MaxNLocator(nbins=10, prune=None))
 plt.xticks(rotation=75)
 
 plt.ylabel('Time [ms]')
-plt.xlabel('Chunk interval')
+plt.xlabel('Interval of single entries')
 
 plt.grid(True, linestyle=':', color='0.8', zorder=0)
 F = plt.gcf()
