@@ -122,25 +122,25 @@ for i in range(3):
     axes[i+3].set_xticks(ind + width)
 
     if i == 0:
-        axes[i].set_ylim(5.6, 6)
-        axes[i+3].set_ylim(0, .4)
+        axes[i].set_ylim(600, 700)
+        axes[i+3].set_ylim(0, 50)
     elif i == 1:
-        axes[i].set_ylim(.12, .16)
-        axes[i+3].set_ylim(0, .02)
+        axes[i].set_ylim(11, 16)
+        axes[i+3].set_ylim(0, 5)
     elif i == 2:
-        axes[i].set_ylim(.004, .008)
-        axes[i+3].set_ylim(0, .0006)
+        axes[i].set_ylim(.55, .8)
+        axes[i+3].set_ylim(0, .025)
 
-    ## To the cool cut-off
-    d = .015  # how big to make the diagonal lines in axes coordinates
-    # arguments to pass to plot, just so we don't keep repeating them
-    kwargs = dict(transform=axes[i].transAxes, color='k', clip_on=False)
-    axes[i].plot((-d, +d), (-d, +d), **kwargs)        # top-left diagonal
-    axes[i].plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
+    # ## To the cool cut-off
+    # d = .015  # how big to make the diagonal lines in axes coordinates
+    # # arguments to pass to plot, just so we don't keep repeating them
+    # kwargs = dict(transform=axes[i].transAxes, color='k', clip_on=False)
+    # axes[i].plot((-d, +d), (-d, +d), **kwargs)        # top-left diagonal
+    # axes[i].plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
 
-    kwargs.update(transform=axes[i+3].transAxes)  # switch to the bottom axes
-    axes[i+3].plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
-    axes[i+3].plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
+    # kwargs.update(transform=axes[i+3].transAxes)  # switch to the bottom axes
+    # axes[i+3].plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
+    # axes[i+3].plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
 
     axes[i].autoscale(enable=True, axis='x', tight=True)
     axes[i+3].autoscale(enable=True, axis='x', tight=True)

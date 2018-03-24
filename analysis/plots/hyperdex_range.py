@@ -70,7 +70,6 @@ params = {'backend': 'ps',
           'font.family': 'times new roman'}
 
 pdf_pages = PdfPages('images/hyperdex_range.pdf')
-fig_size = [fig_width, fig_height / 1.2]
 
 plt.rcParams.update(params)
 plt.axes([0.12, 0.32, 0.85, 0.63], frameon=True)
