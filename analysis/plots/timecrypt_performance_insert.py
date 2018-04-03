@@ -39,6 +39,12 @@ with open("../thesis_prepared_raw_data/timecrypt_boundaries/paillier_performance
 # PLOT #
 ########
 
+def powerticks(x,pos):
+    if x == 0: return "$0$"
+    exponent = int(np.log2(x))
+    #coeff = x/2**exponent
+    return r"$2^{{ {:2d} }}$".format(exponent)
+
 # ---------------------------- GLOBAL VARIABLES --------------------------------#
 # figure settings
 fig_width_pt = 300.0  # Get this from LaTeX using \showthe
@@ -67,11 +73,13 @@ fig = plt.figure()
 ax1 = fig.add_subplot(211)
 second, = ax1.plot(chunk_numbers, insert_time, color=color, linestyle=linestyles[1], linewidth=1.5)
 ax1.yaxis.set_major_locator(ticker.MaxNLocator(5))
+#ax1.xaxis.set_major_formatter(ticker.FuncFormatter(powerticks))
 ax1.set_ylim([0,10])
 
 ax2 = fig.add_subplot(212)
 ax2.plot(chunk_numbers_precise, insert_time_precise, color=color, linestyle=linestyles[1], linewidth=1.5)
 ax2.yaxis.set_major_locator(ticker.MaxNLocator(5))
+#ax2.xaxis.set_major_formatter(ticker.FuncFormatter(powerticks))
 
 fig.text(0.5, 0.01, 'Chunk count', ha='center')
 fig.text(0.02, 0.5, 'Insert time [ms]', va='center', rotation='vertical')

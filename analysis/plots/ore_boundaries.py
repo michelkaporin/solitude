@@ -18,7 +18,7 @@ with open("../thesis_prepared_raw_data/timecrypt_boundaries/strawman_max.log") a
         if line.startswith('TimeCrypt Baseline Max'):
             strawman_data.append(float(line.rstrip().split("\t")[4]))
             i += 1
-            for x in range(98): i += 1; next(file)  
+            for x in range(98): i += 1; next(file)
 with open("../thesis_prepared_raw_data/timecrypt_boundaries/ecelgamal_ore_cutsum/ecelgamal_ore_cutsum.log") as file:
     i = 0
     for line in file:
