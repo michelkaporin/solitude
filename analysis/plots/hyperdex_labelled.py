@@ -106,7 +106,7 @@ ax1.set_xticklabels(types)
 ax1.grid(True, linestyle=':', color='0.8', zorder=0)
 ax2.grid(True, linestyle=':', color='0.8', zorder=0)
 
-ax1.legend((rects1[0], rects2[0]), ('Range query', 'Stream design'), loc="upper left")
+ax1.legend((rects1[0], rects2[0]), ('Range query', 'Stream design'), loc="upper right")
 
 #plt.axis('tight')
 
