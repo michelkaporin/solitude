@@ -7,27 +7,33 @@ import matplotlib.ticker as ticker
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-x_data = []
-strawman_data = []
-ore_data = []
+insert_time = []
+chunk_numbers = []
 
-with open("../thesis_prepared_raw_data/timecrypt_boundaries/strawman_max.log") as file:
-    i = 0
+insert_time_precise = []
+chunk_numbers_precise = []
+
+with open("../thesis_prepared_raw_data/timecrypt_boundaries/paillier_performance_requests/paillier_performance.log") as file:
+    i = 0;
     for line in file:
-        if i >= 100000: break
-        if line.startswith('TimeCrypt Baseline Max'):
-            strawman_data.append(float(line.rstrip().split("\t")[4]))
-            i += 1
-            for x in range(98): i += 1; next(file)  
-with open("../thesis_prepared_raw_data/timecrypt_boundaries/ecelgamal_ore_cutsum/ecelgamal_ore_cutsum.log") as file:
-    i = 0
-    for line in file:
-        if i >= 800000: break
-        if line.startswith('EC ElGamal'):
-            ore_data.append(float(line.rstrip().split("\t")[4]))
-            i += 1
-            x_data.append(i)
-            for x in range(98): i += 1; next(file)
+        line = line.rstrip().split("\t")
+
+        if line[3] != 'insert': continue
+
+        chunk_count = int(line[5])
+        time = float(line[4])
+
+        if chunk_count == 1:
+            insert_time.append(time)
+            chunk_numbers.append(chunk_count)
+            continue
+        if chunk_count % 100 == 0:
+            insert_time.append(time)
+            chunk_numbers.append(chunk_count)
+        
+        if chunk_count <= 1600:
+            insert_time_precise.append(time)
+            chunk_numbers_precise.append(chunk_count)
 
 ########
 # PLOT #
@@ -54,23 +60,21 @@ params = {'backend': 'ps',
 plt.rcParams.update(params)
 plt.rc('pdf', fonttype=42)  # IMPORTANT to get rid of Type 3
 
-colors = ['r', 'g', 'b']
+color = '0.1'
 linestyles = ['-', '-', '-']
 
 fig = plt.figure()
 ax1 = fig.add_subplot(211)
-second, = ax1.plot(x_data[:8000], ore_data[:8000], color=colors[1], linestyle=linestyles[1], linewidth=1.5)
-third, = ax1.plot(x_data[:950], strawman_data[:950], color=colors[2], linestyle=linestyles[2], linewidth=1.5)
-ax1.legend([second, third], ['ORE','Strawman Max'], bbox_to_anchor=(-0.02, 1), loc=3, ncol=3, handletextpad=0.3)
+second, = ax1.plot(chunk_numbers, insert_time, color=color, linestyle=linestyles[1], linewidth=1.5)
 ax1.yaxis.set_major_locator(ticker.MaxNLocator(5))
+ax1.set_ylim([0,10])
 
 ax2 = fig.add_subplot(212)
-ax2.plot(x_data[:250], ore_data[:250], color=colors[1], linestyle=linestyles[1], linewidth=1.5)
-ax2.plot(x_data[:250], strawman_data[:250], color=colors[2], linestyle=linestyles[2], linewidth=1.5)
+ax2.plot(chunk_numbers_precise, insert_time_precise, color=color, linestyle=linestyles[1], linewidth=1.5)
 ax2.yaxis.set_major_locator(ticker.MaxNLocator(5))
 
-fig.text(0.5, 0.01, 'Chunk intervals', ha='center')
-fig.text(0.02, 0.5, 'Time [ms]', va='center', rotation='vertical')
+fig.text(0.5, 0.01, 'Chunk count', ha='center')
+fig.text(0.02, 0.5, 'Insert time [ms]', va='center', rotation='vertical')
 
 ax1.grid(True, linestyle=':', color='0.8', zorder=0)
 ax2.grid(True, linestyle=':', color='0.8', zorder=0)
@@ -80,8 +84,7 @@ ax1.legend(loc='best')
 
 F = plt.gcf()
 F.set_size_inches(fig_size)
-pdf_pages = PdfPages('images/ore_boundaries.pdf')
+pdf_pages = PdfPages('images/timecrypt_performance_insert.pdf')
 pdf_pages.savefig(fig, bbox_inches='tight')
-#plt.savefig('images/ore_boundaries.png', bbox_inches='tight')
 plt.clf()
 pdf_pages.close()
