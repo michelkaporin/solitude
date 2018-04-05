@@ -47,20 +47,20 @@ mean_ranged, std_ranged = compute_avg_std(ranged_res)
 #########
 
 golden_mean = ((math.sqrt(5) - 1.0) / 2.0) * 0.8
-fig_with_pt = 600
+fig_with_pt = 500
 inches_per_pt = 1.0 / 72.27 * 2
 fig_with = fig_with_pt * inches_per_pt
 fig_height = fig_with * golden_mean
 fig_size = [fig_with, fig_height]
 
 params = {'backend': 'ps',
-          'axes.labelsize': 22,
-          'font.size': 22,
-          'legend.fontsize': 20,
-          'xtick.labelsize': 20,
-          'ytick.labelsize': 20,
+          'axes.labelsize': 20,
+          'legend.fontsize': 18,
+          'xtick.labelsize': 18,
+          'ytick.labelsize': 18,
+          'font.size': 18,
           'figure.figsize': fig_size,
-          'font.family': 'Times New Roman'}
+          'font.family': 'times new roman'}
 
 plt.rcParams.update(params)
 plt.rc('pdf', fonttype=42)

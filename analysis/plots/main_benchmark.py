@@ -70,7 +70,7 @@ load_data('../thesis_prepared_raw_data/main_benchmark.log')
 #########
 
 golden_mean = ((math.sqrt(5) - 1.0) / 2.0) * 0.8
-fig_with_pt = 600
+fig_with_pt = 500
 inches_per_pt = 1.0 / 72.27 * 2
 fig_with = fig_with_pt * inches_per_pt
 fig_height = fig_with * golden_mean
@@ -133,7 +133,7 @@ plt.xticks(ind, types)
 ax1.grid(True, linestyle=':', color='0.8', zorder=0)
 ax3.grid(True, linestyle=':', color='0.8', zorder=0)
 ax1.legend((rects1[0], rects2[0], rects3[0]), ('Retrieval', 'Decoding', 'Search'), loc="upper right")
-f.text(0.05, 0.5, 'Time [ms]', va='center', rotation='vertical')
+f.text(0.03, 0.5, 'Time [ms]', va='center', rotation='vertical')
 plt.subplots_adjust(left=0.175)
 #plt.axis('tight')
 
