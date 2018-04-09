@@ -33,13 +33,19 @@ with open("../thesis_prepared_raw_data/timecrypt_boundaries/ecelgamal_ore_cutsum
 # PLOT #
 ########
 
+def format_interval(y, pos=None):
+    if y == 0:
+        return 1
+    else:
+        return int(y)
+
 # ---------------------------- GLOBAL VARIABLES --------------------------------#
 # figure settings
 fig_width_pt = 300.0  # Get this from LaTeX using \showthe
 inches_per_pt = 1.0 / 72.27 * 2  # Convert pt to inches
 golden_mean = ((math.sqrt(5) - 1.0) / 2.0) * .8  # Aesthetic ratio
 fig_width = fig_width_pt * inches_per_pt  # width in inches
-fig_height = (fig_width * golden_mean)  # height in inches
+fig_height = (fig_width * golden_mean * 1.2)  # height in inches
 fig_size = [fig_width, fig_height]
 
 params = {'backend': 'ps',
@@ -58,22 +64,32 @@ colors = ['r', 'g', 'b']
 linestyles = ['-', '-', '-']
 
 fig = plt.figure()
-ax1 = fig.add_subplot(211)
+ax1 = fig.add_subplot(311)
 second, = ax1.plot(x_data[:8000], ore_data[:8000], color=colors[1], linestyle=linestyles[1], linewidth=1.5)
 third, = ax1.plot(x_data[:950], strawman_data[:950], color=colors[2], linestyle=linestyles[2], linewidth=1.5)
 ax1.legend([second, third], ['ORE','Strawman Max'], bbox_to_anchor=(-0.02, 1), loc=3, ncol=3, handletextpad=0.3)
-ax1.yaxis.set_major_locator(ticker.MaxNLocator(5))
+# ax1.xaxis.set_major_locator(ticker.MaxNLocator(5))
 
-ax2 = fig.add_subplot(212)
-ax2.plot(x_data[:250], ore_data[:250], color=colors[1], linestyle=linestyles[1], linewidth=1.5)
-ax2.plot(x_data[:250], strawman_data[:250], color=colors[2], linestyle=linestyles[2], linewidth=1.5)
-ax2.yaxis.set_major_locator(ticker.MaxNLocator(5))
+ax2 = fig.add_subplot(312)
+ax2.plot(x_data[:255], ore_data[:255], color=colors[1], linestyle=linestyles[1], linewidth=1.5)
+ax2.plot(x_data[:255], strawman_data[:255], color=colors[2], linestyle=linestyles[2], linewidth=1.5)
+ax2.set_xlim(0,25000)
+
+ax3 = fig.add_subplot(313)
+ax3.plot(x_data[:55], ore_data[:55], color=colors[1], linestyle=linestyles[1], linewidth=1.5)
+ax3.plot(x_data[:55], strawman_data[:55], color=colors[2], linestyle=linestyles[2], linewidth=1.5)
+ax3.set_xlim(0,5000)
+
+for ax in [ax1, ax2, ax3]: 
+    ax.xaxis.set_major_formatter(ticker.FuncFormatter(format_interval))
+    if ax != ax1: 
+        ax.yaxis.set_major_locator(ticker.MaxNLocator(3))
+    else:
+        ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
+    ax.grid(True, linestyle=':', color='0.8', zorder=0)
 
 fig.text(0.5, 0.01, 'Chunk intervals', ha='center')
 fig.text(0.02, 0.5, 'Time [ms]', va='center', rotation='vertical')
-
-ax1.grid(True, linestyle=':', color='0.8', zorder=0)
-ax2.grid(True, linestyle=':', color='0.8', zorder=0)
 
 fig.subplots_adjust(hspace=.5, bottom=0.15)
 ax1.legend(loc='best')

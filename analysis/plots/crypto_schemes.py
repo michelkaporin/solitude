@@ -147,7 +147,7 @@ for i in range(3):
 
    
 fig.text(0.04, 0.5, 'Time [ms]', va='center', rotation='vertical')
-plt.figlegend((rects1[0], rects2[0], rects3[0], rects4[0]), ('Paillier', 'EC ElGamal', 'OPE', 'ORE'), loc="upper center", ncol=4, labelspacing=0.)
+plt.figlegend((rects1[0], rects2[0], rects3[0], rects4[0]), ('Paillier', 'EC-ElGamal', 'OPE', 'ORE'), loc="upper center", ncol=4, labelspacing=0.)
 axes[3].set_xlabel("Encryption")
 axes[4].set_xlabel("Decryption")
 axes[5].set_xlabel("Operation")
