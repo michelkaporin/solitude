@@ -4,6 +4,7 @@ from datetime import datetime
 import numpy as np
 import re
 import matplotlib.ticker as ticker
+from matplotlib.ticker import MaxNLocator, FuncFormatter
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -84,6 +85,12 @@ def aggregate(input):
 ########
 # PLOT #
 ########
+def format_interval(y, pos=None):
+    if y == 0:
+        return 1
+    else:
+        return int(y)
+
 baseline_max_data = aggregate(baseline_max_data)
 baseline_sum_data = aggregate(baseline_sum_data)
 timecrypt_paillier_data = aggregate(timecrypt_paillier_data)
@@ -124,6 +131,7 @@ second, = ax.plot(x_data, timecrypt_paillier_data[:1000], color=colors[1], linew
 third, = ax.plot(x_data, timecrypt_ecelgamal_data[:1000], color=colors[0], linewidth=1.5)
 ax.legend([first, second, third], ['Strawman Sum', 'Paillier','EC ElGamal'], bbox_to_anchor=(0, 1), loc=3, ncol=3, handletextpad=0.3)
 ax.yaxis.set_major_locator(ticker.MaxNLocator(10))
+ax.xaxis.set_major_formatter(FuncFormatter(format_interval))
 plt.ylabel('Time [ms]')
 plt.xlabel('Time interval')
 ax.set_ylim([0,80])
@@ -144,6 +152,7 @@ ax.plot(x_data, timecrypt_ope_data[:1000], color=colors[1], linewidth=1.5)
 ax.plot(x_data, timecrypt_ore_data[:1000], color=colors[0], linewidth=1.5)
 ax.legend([first, second, third], ['Strawman Max', 'OPE','ORE'], bbox_to_anchor=(0, 1), loc=3, ncol=3, handletextpad=0.3)
 ax.yaxis.set_major_locator(ticker.MaxNLocator(10))
+ax.xaxis.set_major_formatter(FuncFormatter(format_interval))
 plt.ylabel('Time [ms]')
 plt.xlabel('Time interval')
 ax.set_ylim([0,38])

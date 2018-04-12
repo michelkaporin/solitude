@@ -45,11 +45,11 @@ y_data = aggregate()
 # PLOT #
 ########
 
-def format_fn(tick_val, tick_pos):
-    if int(tick_val) in range(len(x_data)):
-        return x_data[int(tick_val)]
+def format_interval(y, pos=None):
+    if y == 0:
+        return 1
     else:
-        return ''
+        return int(y)
 
 # ---------------------------- GLOBAL VARIABLES --------------------------------#
 # figure settings
@@ -82,9 +82,9 @@ fig, ax = plt.subplots(1, 1)
 ax.plot(range(len(x_data)), y_data,
         color=colors[0], linestyle=linestyles[0], linewidth=1.5)
 
-ax.xaxis.set_major_formatter(FuncFormatter(format_fn))
+ax.xaxis.set_major_formatter(FuncFormatter(format_interval))
 ax.xaxis.set_major_locator(MaxNLocator(nbins=10, prune=None))
-plt.xticks(rotation=75)
+#plt.xticks(rotation=75)
 
 plt.ylabel('Time [ms]')
 plt.xlabel('Interval of single entries')

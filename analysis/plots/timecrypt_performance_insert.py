@@ -27,7 +27,7 @@ with open("../thesis_prepared_raw_data/timecrypt_boundaries/paillier_performance
             insert_time.append(time)
             chunk_numbers.append(chunk_count)
             continue
-        if chunk_count % 100 == 0:
+        if chunk_count % 100 == 0 and time < 7:
             insert_time.append(time)
             chunk_numbers.append(chunk_count)
         
@@ -39,11 +39,11 @@ with open("../thesis_prepared_raw_data/timecrypt_boundaries/paillier_performance
 # PLOT #
 ########
 
-def powerticks(x,pos):
-    if x == 0: return "$0$"
-    exponent = int(np.log2(x))
-    #coeff = x/2**exponent
-    return r"$2^{{ {:2d} }}$".format(exponent)
+# def powerticks(x,pos):
+#     if x == 0: return "$0$"
+#     exponent = int(np.log2(x))
+#     #coeff = x/2**exponent
+#     return r"$2^{{ {:2d} }}$".format(exponent)
 
 # ---------------------------- GLOBAL VARIABLES --------------------------------#
 # figure settings
@@ -74,12 +74,18 @@ ax1 = fig.add_subplot(211)
 second, = ax1.plot(chunk_numbers, insert_time, color=color, linestyle=linestyles[1], linewidth=1.5)
 ax1.yaxis.set_major_locator(ticker.MaxNLocator(5))
 #ax1.xaxis.set_major_formatter(ticker.FuncFormatter(powerticks))
-ax1.set_ylim([0,10])
+ax1.set_ylim(0,8) 
+
+# ax2 = fig.add_subplot(212)
+# ax2.plot(chunk_numbers_precise, insert_time_precise, color=color, linestyle=linestyles[1], linewidth=1.5)
+# ax2.yaxis.set_major_locator(ticker.MaxNLocator(5))
+# #ax2.xaxis.set_major_formatter(ticker.FuncFormatter(powerticks))
 
 ax2 = fig.add_subplot(212)
-ax2.plot(chunk_numbers_precise, insert_time_precise, color=color, linestyle=linestyles[1], linewidth=1.5)
+ax2.plot(chunk_numbers, insert_time, color=color, linestyle=linestyles[1], linewidth=1.5)
+ax2.set_xlim(0, 200000)
+ax2.set_ylim(0.2,.8)
 ax2.yaxis.set_major_locator(ticker.MaxNLocator(5))
-#ax2.xaxis.set_major_formatter(ticker.FuncFormatter(powerticks))
 
 fig.text(0.5, 0.01, 'Chunk count', ha='center')
 fig.text(0.02, 0.5, 'Insert time [ms]', va='center', rotation='vertical')

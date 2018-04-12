@@ -29,6 +29,11 @@ with open("data/s3_sum_max.data") as file:
 # PLOT #
 ########
 
+def format_interval(y, pos=None):
+    if y == 0:
+        return 1
+    else:
+        return int(y)
 # ---------------------------- GLOBAL VARIABLES --------------------------------#
 # figure settings
 fig_width_pt = 500.0  # Get this from LaTeX using \showthe
@@ -60,9 +65,10 @@ fig, ax = plt.subplots(1, 1)
 ax.plot(range(len(sum_data[:1000])), sum_data[:1000],
         color=colors[0], linestyle=linestyles[0], linewidth=1.5)
 
+ax.xaxis.set_major_formatter(FuncFormatter(format_interval))
 ax.xaxis.set_major_locator(ticker.MaxNLocator(10))
 
-plt.xticks(rotation=75)
+#plt.xticks(rotation=75)
 
 plt.ylabel('Time [ms]')
 plt.xlabel('Time interval')

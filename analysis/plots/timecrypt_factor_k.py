@@ -7,6 +7,7 @@ import matplotlib.ticker as ticker
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+from matplotlib.ticker import MaxNLocator, FuncFormatter
 
 timecrypt_paillier_data_4 = []
 timecrypt_ecelgamal_data_4 = []
@@ -107,6 +108,12 @@ def aggregate(input):
 ########
 # PLOT #
 ########
+def format_interval(y, pos=None):
+    if y == 0:
+        return 1
+    else:
+        return int(y)
+
 timecrypt_paillier_data_4 = aggregate(timecrypt_paillier_data_4)
 timecrypt_paillier_data_16 = aggregate(timecrypt_paillier_data_16)
 timecrypt_paillier_data_64 = aggregate(timecrypt_paillier_data_64)
@@ -157,6 +164,7 @@ second, = ax.plot(x_data, timecrypt_paillier_data_16[:1000], color=colors[1], li
 third, = ax.plot(x_data, timecrypt_paillier_data_64[:1000], color=colors[0], linewidth=1.5)
 ax.legend([first, second, third], ['K = 4', 'K = 16','K = 64'], bbox_to_anchor=(0, 1), loc=3, ncol=3, handletextpad=0.3)
 # ax.yaxis.set_major_locator(ticker.MaxNLocator(10))
+ax.xaxis.set_major_formatter(FuncFormatter(format_interval))
 plt.ylabel('Time [ms]')
 plt.xlabel('Time interval')
 ax.set_ylim([55, 75])
@@ -177,6 +185,7 @@ ax.plot(x_data, timecrypt_ecelgamal_data_16[:1000], color=colors[1], linewidth=1
 ax.plot(x_data, timecrypt_ecelgamal_data_64[:1000], color=colors[0], linewidth=1.5)
 ax.legend([first, second, third], ['K = 4', 'K = 16','K = 64'], bbox_to_anchor=(0, 1), loc=3, ncol=3, handletextpad=0.3)
 ax.yaxis.set_major_locator(ticker.MaxNLocator(10))
+ax.xaxis.set_major_formatter(FuncFormatter(format_interval))
 plt.ylabel('Time [ms]')
 plt.xlabel('Time interval')
 
@@ -196,6 +205,7 @@ ax.plot(x_data, timecrypt_ope_data_16[:1000], color=colors[1], linewidth=1.5)
 ax.plot(x_data, timecrypt_ope_data_64[:1000], color=colors[0], linewidth=1.5)
 ax.legend([first, second, third], ['K = 4', 'K = 16','K = 64'], bbox_to_anchor=(0, 1), loc=3, ncol=3, handletextpad=0.3)
 ax.yaxis.set_major_locator(ticker.MaxNLocator(10))
+ax.xaxis.set_major_formatter(FuncFormatter(format_interval))
 plt.ylabel('Time [ms]')
 plt.xlabel('Time interval')
 
@@ -215,6 +225,7 @@ ax.plot(x_data, timecrypt_ore_data_16[:1000], color=colors[1], linewidth=1.5)
 ax.plot(x_data, timecrypt_ore_data_64[:1000], color=colors[0], linewidth=1.5)
 ax.legend([first, second, third], ['K = 4', 'K = 16','K = 64'], bbox_to_anchor=(0, 1), loc=3, ncol=3, handletextpad=0.3)
 ax.yaxis.set_major_locator(ticker.MaxNLocator(10))
+ax.xaxis.set_major_formatter(FuncFormatter(format_interval))
 plt.ylabel('Time [ms]')
 plt.xlabel('Time interval')
 # ax.set_ylim([0.99, 1.1])
