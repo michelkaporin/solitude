@@ -53,7 +53,7 @@ def format_interval(y, pos=None):
 
 # ---------------------------- GLOBAL VARIABLES --------------------------------#
 # figure settings
-fig_width_pt = 500.0  # Get this from LaTeX using \showthe
+fig_width_pt = 400.0  # Get this from LaTeX using \showthe
 inches_per_pt = 1.0 / 72.27 * 2  # Convert pt to inches
 golden_mean = ((math.sqrt(5) - 1.0) / 2.0) * .8  # Aesthetic ratio
 fig_width = fig_width_pt * inches_per_pt  # width in inches

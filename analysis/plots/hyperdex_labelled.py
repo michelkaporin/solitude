@@ -47,7 +47,7 @@ mean_ranged, std_ranged = compute_avg_std(ranged_res)
 #########
 
 golden_mean = ((math.sqrt(5) - 1.0) / 2.0) * 0.8
-fig_with_pt = 500
+fig_with_pt = 400
 inches_per_pt = 1.0 / 72.27 * 2
 fig_with = fig_with_pt * inches_per_pt
 fig_height = fig_with * golden_mean
@@ -81,28 +81,31 @@ rects2 = ax2.bar(ind + width, mean_labelled, width, color='0.50', yerr=std_label
 
 ax1.set_ylim(100, 150)  # outliers only
 ax2.set_ylim(0, .15)  # most of the data
+
 # hide the spines between ax and ax2
 ax1.spines['bottom'].set_visible(False)
 ax2.spines['top'].set_visible(False)
 ax1.xaxis.tick_top()
 ax1.tick_params(labeltop='off')  # don't put tick labels at the top
 ax2.xaxis.tick_bottom()
-d = .015  # how big to make the diagonal lines in axes coordinates
-# arguments to pass to plot, just so we don't keep repeating them
-kwargs = dict(transform=ax1.transAxes, color='k', clip_on=False)
-ax1.plot((-d, +d), (-d, +d), **kwargs)        # top-left diagonal
-ax1.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
+# d = .015  # how big to make the diagonal lines in axes coordinates
+# # arguments to pass to plot, just so we don't keep repeating them
+# kwargs = dict(transform=ax1.transAxes, color='k', clip_on=False)
+# ax1.plot((-d, +d), (-d, +d), **kwargs)        # top-left diagonal
+# ax1.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
 
-kwargs.update(transform=ax2.transAxes)  # switch to the bottom axes
-ax2.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
-ax2.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
+# kwargs.update(transform=ax2.transAxes)  # switch to the bottom axes
+# ax2.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
+# ax2.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
 
 
 f.text(0.05, 0.5, 'Time [ms]', va='center', rotation='vertical')
 ax2.yaxis.set_major_locator(ticker.MaxNLocator(5))
 
 ax1.set_xticks(ind + width)
-ax1.set_xticklabels(types)
+ax2.set_xticklabels(types)
+ax2.tick_params(axis='x', pad=15)
+
 ax1.grid(True, linestyle=':', color='0.8', zorder=0)
 ax2.grid(True, linestyle=':', color='0.8', zorder=0)
 

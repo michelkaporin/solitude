@@ -54,7 +54,7 @@ load_data('data/crypto_schemes.data')
 #########
 
 golden_mean = ((math.sqrt(5) - 1.0) / 2.0) * 0.8
-fig_with_pt = 600
+fig_with_pt = 400
 inches_per_pt = 1.0 / 72.27 * 2
 fig_with = fig_with_pt * inches_per_pt
 fig_height = fig_with * golden_mean
@@ -84,7 +84,7 @@ width = 0.27
 fig = plt.figure()
 axes = []
 for i  in range(3):
-    ax = fig.add_subplot(2,3,i+1)
+    ax = fig.add_subplot(2,3,i+1, gridspec_kw = {'width_ratios':[3, 1]})
     axes.append(ax)
 for i in range(3):
     ax = fig.add_subplot(2,3,i+4, sharex=axes[i])
@@ -131,28 +131,18 @@ for i in range(3):
         axes[i].set_ylim(.55, .8)
         axes[i+3].set_ylim(0, .025)
 
-    # ## To the cool cut-off
-    # d = .015  # how big to make the diagonal lines in axes coordinates
-    # # arguments to pass to plot, just so we don't keep repeating them
-    # kwargs = dict(transform=axes[i].transAxes, color='k', clip_on=False)
-    # axes[i].plot((-d, +d), (-d, +d), **kwargs)        # top-left diagonal
-    # axes[i].plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
-
-    # kwargs.update(transform=axes[i+3].transAxes)  # switch to the bottom axes
-    # axes[i+3].plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
-    # axes[i+3].plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
-
     axes[i].autoscale(enable=True, axis='x', tight=True)
     axes[i+3].autoscale(enable=True, axis='x', tight=True)
 
    
 fig.text(0.04, 0.5, 'Time [ms]', va='center', rotation='vertical')
-plt.figlegend((rects1[0], rects2[0], rects3[0], rects4[0]), ('Paillier', 'EC-ElGamal', 'OPE', 'ORE'), loc="upper center", ncol=4, labelspacing=0.)
+#loc=(0.107, 0.91)
+plt.figlegend((rects1[0], rects2[0], rects3[0], rects4[0]), ('Paillier', 'EC-ElGamal', 'OPE', 'ORE'), loc=(0, 0), bbox_to_anchor=[0.105, 0.95], ncol=4, labelspacing=0.)
 axes[3].set_xlabel("Encryption")
 axes[4].set_xlabel("Decryption")
 axes[5].set_xlabel("Operation")
 
-plt.subplots_adjust(hspace=0.08, wspace=0.4)     
+plt.subplots_adjust(hspace=0.18, wspace=0.4)     
 
 F = plt.gcf()
 F.set_size_inches(fig_size)

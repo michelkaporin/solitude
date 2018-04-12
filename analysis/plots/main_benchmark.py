@@ -70,7 +70,7 @@ load_data('../thesis_prepared_raw_data/main_benchmark.log')
 #########
 
 golden_mean = ((math.sqrt(5) - 1.0) / 2.0) * 0.8
-fig_with_pt = 500
+fig_with_pt = 400
 inches_per_pt = 1.0 / 72.27 * 2
 fig_with = fig_with_pt * inches_per_pt
 fig_height = fig_with * golden_mean
@@ -118,22 +118,22 @@ ax3.spines['top'].set_visible(False)
 ax1.xaxis.tick_top()
 ax1.tick_params(labeltop='off')  # don't put tick labels at the top
 ax3.xaxis.tick_bottom()
-d = .015  # how big to make the diagonal lines in axes coordinates
-# arguments to pass to plot, just so we don't keep repeating them
-kwargs = dict(transform=ax1.transAxes, color='k', clip_on=False)
-ax1.plot((-d, +d), (-d, +d), **kwargs)        # top-left diagonal
-ax1.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
+# d = .015  # how big to make the diagonal lines in axes coordinates
+# # arguments to pass to plot, just so we don't keep repeating them
+# kwargs = dict(transform=ax1.transAxes, color='k', clip_on=False)
+# ax1.plot((-d, +d), (-d, +d), **kwargs)        # top-left diagonal
+# ax1.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
 
-kwargs.update(transform=ax3.transAxes)  # switch to the bottom axes
-ax3.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
-ax3.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
+# kwargs.update(transform=ax3.transAxes)  # switch to the bottom axes
+# ax3.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
+# ax3.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
 
 plt.xticks(ind, types)
 # ax3.set_xlabel("Baseline design")
 ax1.grid(True, linestyle=':', color='0.8', zorder=0)
 ax3.grid(True, linestyle=':', color='0.8', zorder=0)
 ax1.legend((rects1[0], rects2[0], rects3[0]), ('Retrieval', 'Decoding', 'Search'), loc="upper right")
-f.text(0.03, 0.5, 'Time [ms]', va='center', rotation='vertical')
+f.text(0, 0.5, 'Time [ms]', va='center', rotation='vertical')
 plt.subplots_adjust(left=0.175)
 #plt.axis('tight')
 
@@ -157,6 +157,7 @@ plt.xticks(ind, types)
 # ax2.set_xlabel("Stream design")
 ax2.grid(True, linestyle=':', color='0.8', zorder=0)
 #plt.axis('tight')
+f.text(0, 0.5, 'Time [ms]', va='center', rotation='vertical', alpha=0)
 
 F = plt.gcf()
 F.set_size_inches(fig_size)

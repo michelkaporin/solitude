@@ -42,7 +42,7 @@ load_data('data/hyperdex_dimensions.data')
 #########
 
 golden_mean = ((math.sqrt(5) - 1.0) / 2.0) * 0.8
-fig_with_pt = 500
+fig_with_pt = 400
 inches_per_pt = 1.0 / 72.27 * 2
 fig_with = fig_with_pt * inches_per_pt
 fig_height = fig_with * golden_mean
