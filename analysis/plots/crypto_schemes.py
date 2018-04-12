@@ -6,7 +6,8 @@ import math
 import sqlite3
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-
+from matplotlib import gridspec
+import matplotlib.ticker as ticker
 
 ###############
 ### Parsing ###
@@ -58,7 +59,7 @@ fig_with_pt = 400
 inches_per_pt = 1.0 / 72.27 * 2
 fig_with = fig_with_pt * inches_per_pt
 fig_height = fig_with * golden_mean
-fig_size = [fig_with, fig_height]
+fig_size = [fig_with, fig_height / 1.22]
 
 params = {'backend': 'ps',
           'axes.labelsize': 22,
@@ -78,16 +79,17 @@ mean_paillier, std_paillier = compute_avg_std(paillier)
 mean_eegamal, std_eegamal = compute_avg_std(eegamal)
 mean_ope, std_ope = compute_avg_std(ope)
 mean_ore, std_ore = compute_avg_std(ore)
-#ind = np.arange(len(['Type']))
 width = 0.27
 
 fig = plt.figure()
 axes = []
-for i  in range(3):
-    ax = fig.add_subplot(2,3,i+1, gridspec_kw = {'width_ratios':[3, 1]})
+
+gs = gridspec.GridSpec(2, 3, height_ratios=[1, 3]) 
+for i in range(3):
+    ax = plt.subplot(gs[i])
     axes.append(ax)
 for i in range(3):
-    ax = fig.add_subplot(2,3,i+4, sharex=axes[i])
+    ax = plt.subplot(gs[i+3], sharex=axes[i])
     axes.append(ax)
 
 if mean_paillier[2] == 0:
@@ -123,16 +125,19 @@ for i in range(3):
 
     if i == 0:
         axes[i].set_ylim(600, 700)
-        axes[i+3].set_ylim(0, 50)
+        axes[i+3].set_ylim(0, 45)
     elif i == 1:
-        axes[i].set_ylim(11, 16)
-        axes[i+3].set_ylim(0, 5)
+        axes[i].set_ylim(12, 17)
+        axes[i+3].set_ylim(0, 1.5)
     elif i == 2:
-        axes[i].set_ylim(.55, .8)
-        axes[i+3].set_ylim(0, .025)
+        axes[i].set_ylim(.6, .82)
+        axes[i+3].set_ylim(0, .02)
 
     axes[i].autoscale(enable=True, axis='x', tight=True)
     axes[i+3].autoscale(enable=True, axis='x', tight=True)
+
+    axes[i].yaxis.set_major_locator(ticker.MaxNLocator(3))
+    axes[i+3].yaxis.set_major_locator(ticker.MaxNLocator(5))
 
    
 fig.text(0.04, 0.5, 'Time [ms]', va='center', rotation='vertical')

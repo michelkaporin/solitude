@@ -121,14 +121,14 @@ plt.rcParams.update(params)
 plt.axes([0.12, 0.32, 0.85, 0.63], frameon=True)
 plt.rc('pdf', fonttype=42)  # IMPORTANT to get rid of Type 3
 
-colors = ['r', 'g', 'b']
+colors = ['0', '0.33', '0.66']
 
 
 ### SUM PLOT ###
 fig, ax = plt.subplots(1, 1)
-first, = ax.plot(x_data, baseline_sum_data[:1000], color=colors[2], linewidth=1.5)
-second, = ax.plot(x_data, timecrypt_paillier_data[:1000], color=colors[1], linewidth=1.5)
-third, = ax.plot(x_data, timecrypt_ecelgamal_data[:1000], color=colors[0], linewidth=1.5)
+first, = ax.plot(x_data, baseline_sum_data[:1000], color=colors[2], linewidth=2)
+second, = ax.plot(x_data, timecrypt_paillier_data[:1000], color=colors[1], linewidth=2)
+third, = ax.plot(x_data, timecrypt_ecelgamal_data[:1000], color=colors[0], linewidth=2)
 ax.legend([first, second, third], ['Strawman Sum', 'Paillier','EC ElGamal'], bbox_to_anchor=(0, 1), loc=3, ncol=3, handletextpad=0.3)
 ax.yaxis.set_major_locator(ticker.MaxNLocator(10))
 ax.xaxis.set_major_formatter(FuncFormatter(format_interval))
@@ -147,9 +147,9 @@ pdf_pages.close()
 
 ### MAX PLOT ###
 fig, ax = plt.subplots(1, 1)
-ax.plot(x_data, baseline_max_data[:1000], color=colors[2], linewidth=1.5)
-ax.plot(x_data, timecrypt_ope_data[:1000], color=colors[1], linewidth=1.5)
-ax.plot(x_data, timecrypt_ore_data[:1000], color=colors[0], linewidth=1.5)
+ax.plot(x_data, baseline_max_data[:1000], color=colors[2], linewidth=2)
+ax.plot(x_data, timecrypt_ope_data[:1000], color=colors[1], linewidth=2)
+ax.plot(x_data, timecrypt_ore_data[:1000], color=colors[0], linewidth=2)
 ax.legend([first, second, third], ['Strawman Max', 'OPE','ORE'], bbox_to_anchor=(0, 1), loc=3, ncol=3, handletextpad=0.3)
 ax.yaxis.set_major_locator(ticker.MaxNLocator(10))
 ax.xaxis.set_major_formatter(FuncFormatter(format_interval))

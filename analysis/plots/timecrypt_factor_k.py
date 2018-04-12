@@ -134,7 +134,7 @@ x_data = range(len(timecrypt_ope_data_4[:1000]))
 
 # ---------------------------- GLOBAL VARIABLES --------------------------------#
 # figure settings
-fig_width_pt = 500.0  # Get this from LaTeX using \showthe
+fig_width_pt = 400.0  # Get this from LaTeX using \showthe
 inches_per_pt = 1.0 / 72.27 * 2  # Convert pt to inches
 golden_mean = ((math.sqrt(5) - 1.0) / 2.0) * .8  # Aesthetic ratio
 fig_width = fig_width_pt * inches_per_pt  # width in inches
@@ -154,14 +154,14 @@ plt.rcParams.update(params)
 plt.axes([0.12, 0.32, 0.85, 0.63], frameon=True)
 plt.rc('pdf', fonttype=42)  # IMPORTANT to get rid of Type 3
 
-colors = ['r', 'g', 'b']
+colors = ['0', '0.33', '0.66']
 
 
 ### PAILLIER PLOT ###
 fig, ax = plt.subplots(1, 1)
-first, = ax.plot(x_data, timecrypt_paillier_data_4[:1000], color=colors[2], linewidth=1.5)
-second, = ax.plot(x_data, timecrypt_paillier_data_16[:1000], color=colors[1], linewidth=1.5)
-third, = ax.plot(x_data, timecrypt_paillier_data_64[:1000], color=colors[0], linewidth=1.5)
+first, = ax.plot(x_data, timecrypt_paillier_data_4[:1000], color=colors[2], linewidth=2)
+second, = ax.plot(x_data, timecrypt_paillier_data_16[:1000], color=colors[1], linewidth=2)
+third, = ax.plot(x_data, timecrypt_paillier_data_64[:1000], color=colors[0], linewidth=2)
 ax.legend([first, second, third], ['K = 4', 'K = 16','K = 64'], bbox_to_anchor=(0, 1), loc=3, ncol=3, handletextpad=0.3)
 # ax.yaxis.set_major_locator(ticker.MaxNLocator(10))
 ax.xaxis.set_major_formatter(FuncFormatter(format_interval))
@@ -180,9 +180,9 @@ pdf_pages.close()
 
 ### ECELGAMAL PLOT ###
 fig, ax = plt.subplots(1, 1)
-ax.plot(x_data, timecrypt_ecelgamal_data_4[:1000], color=colors[2], linewidth=1.5)
-ax.plot(x_data, timecrypt_ecelgamal_data_16[:1000], color=colors[1], linewidth=1.5)
-ax.plot(x_data, timecrypt_ecelgamal_data_64[:1000], color=colors[0], linewidth=1.5)
+ax.plot(x_data, timecrypt_ecelgamal_data_4[:1000], color=colors[2], linewidth=2)
+ax.plot(x_data, timecrypt_ecelgamal_data_16[:1000], color=colors[1], linewidth=2)
+ax.plot(x_data, timecrypt_ecelgamal_data_64[:1000], color=colors[0], linewidth=2)
 ax.legend([first, second, third], ['K = 4', 'K = 16','K = 64'], bbox_to_anchor=(0, 1), loc=3, ncol=3, handletextpad=0.3)
 ax.yaxis.set_major_locator(ticker.MaxNLocator(10))
 ax.xaxis.set_major_formatter(FuncFormatter(format_interval))

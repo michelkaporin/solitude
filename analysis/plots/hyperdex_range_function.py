@@ -80,7 +80,7 @@ linestyles = ['-', '--', '-']
 
 fig, ax = plt.subplots(1, 1)
 ax.plot(range(1, len(x_data)+1), y_data,
-        color=colors[0], linestyle=linestyles[0], linewidth=1.5)
+        color=colors[0], linestyle=linestyles[0], linewidth=2)
 
 ax.xaxis.set_major_formatter(FuncFormatter(format_interval))
 ax.xaxis.set_major_locator(MaxNLocator(nbins=10, prune=None))

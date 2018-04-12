@@ -51,7 +51,7 @@ fig_with_pt = 400
 inches_per_pt = 1.0 / 72.27 * 2
 fig_with = fig_with_pt * inches_per_pt
 fig_height = fig_with * golden_mean
-fig_size = [fig_with, fig_height]
+fig_size = [fig_with, fig_height / 1.22]
 
 params = {'backend': 'ps',
           'axes.labelsize': 20,

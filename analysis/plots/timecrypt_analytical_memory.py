@@ -57,7 +57,7 @@ def format_size(y, pos=None):
     return 2**y
 # ---------------------------- GLOBAL VARIABLES --------------------------------#
 # figure settings
-fig_width_pt = 500.0  # Get this from LaTeX using \showthe
+fig_width_pt = 400.0  # Get this from LaTeX using \showthe
 inches_per_pt = 1.0 / 72.27 * 2  # Convert pt to inches
 golden_mean = ((math.sqrt(5) - 1.0) / 2.0) * .8  # Aesthetic ratio
 fig_width = fig_width_pt * inches_per_pt  # width in inches
@@ -77,15 +77,14 @@ plt.rcParams.update(params)
 plt.axes([0.12, 0.32, 0.85, 0.63], frameon=True)
 plt.rc('pdf', fonttype=42)  # IMPORTANT to get rid of Type 3
 
-colors = ['r', 'g', 'b', '']
-
+colors = ['0', '0.33', '0.66']
 
 fig, ax = plt.subplots(1, 1)
-first, = ax.plot(chunks_count, plaintext, linewidth=1.5)
-second, = ax.plot(chunks_count, paillier, linewidth=1.5)
-third, = ax.plot(chunks_count, ecelgamal, linewidth=1.5)
-fourth, = ax.plot(chunks_count, ope, linewidth=1.5)
-fifth, = ax.plot(chunks_count, ore, linewidth=1.5)
+first, = ax.plot(chunks_count, plaintext, '-', linewidth=2, color=colors[2])
+second, = ax.plot(chunks_count, paillier, '--', linewidth=2, color=colors[1])
+third, = ax.plot(chunks_count, ecelgamal, '--', linewidth=2, color=colors[0])
+fourth, = ax.plot(chunks_count, ope, '-', linewidth=2, color=colors[1])
+fifth, = ax.plot(chunks_count, ore, '-', linewidth=2, color=colors[0])
 
 ax.legend([first, second, third, fourth, fifth], ['Plaintext', 'Paillier', 'EC-ElGamal', 'OPE', 'ORE'], bbox_to_anchor=(0, 1), loc=3, ncol=5, handletextpad=0.3)
 plt.yscale('log', basey=2)

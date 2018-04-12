@@ -47,7 +47,7 @@ with open("../thesis_prepared_raw_data/timecrypt_boundaries/paillier_performance
 
 # ---------------------------- GLOBAL VARIABLES --------------------------------#
 # figure settings
-fig_width_pt = 300.0  # Get this from LaTeX using \showthe
+fig_width_pt = 400.0  # Get this from LaTeX using \showthe
 inches_per_pt = 1.0 / 72.27 * 2  # Convert pt to inches
 golden_mean = ((math.sqrt(5) - 1.0) / 2.0) * .8  # Aesthetic ratio
 fig_width = fig_width_pt * inches_per_pt  # width in inches
@@ -71,24 +71,24 @@ linestyles = ['-', '-', '-']
 
 fig = plt.figure()
 ax1 = fig.add_subplot(211)
-second, = ax1.plot(chunk_numbers, insert_time, color=color, linestyle=linestyles[1], linewidth=1.5)
+second, = ax1.plot(chunk_numbers, insert_time, color=color, linestyle=linestyles[1], linewidth=2)
 ax1.yaxis.set_major_locator(ticker.MaxNLocator(5))
 #ax1.xaxis.set_major_formatter(ticker.FuncFormatter(powerticks))
 ax1.set_ylim(0,8) 
 
 # ax2 = fig.add_subplot(212)
-# ax2.plot(chunk_numbers_precise, insert_time_precise, color=color, linestyle=linestyles[1], linewidth=1.5)
+# ax2.plot(chunk_numbers_precise, insert_time_precise, color=color, linestyle=linestyles[1], linewidth=2)
 # ax2.yaxis.set_major_locator(ticker.MaxNLocator(5))
 # #ax2.xaxis.set_major_formatter(ticker.FuncFormatter(powerticks))
 
 ax2 = fig.add_subplot(212)
-ax2.plot(chunk_numbers, insert_time, color=color, linestyle=linestyles[1], linewidth=1.5)
+ax2.plot(chunk_numbers, insert_time, color=color, linestyle=linestyles[1], linewidth=2)
 ax2.set_xlim(0, 200000)
 ax2.set_ylim(0.2,.8)
 ax2.yaxis.set_major_locator(ticker.MaxNLocator(5))
 
-fig.text(0.5, 0.01, 'Chunk count', ha='center')
-fig.text(0.02, 0.5, 'Insert time [ms]', va='center', rotation='vertical')
+fig.text(0.5, 0.04, 'Chunk count', ha='center')
+fig.text(0.05, 0.5, 'Insert time [ms]', va='center', rotation='vertical')
 
 ax1.grid(True, linestyle=':', color='0.8', zorder=0)
 ax2.grid(True, linestyle=':', color='0.8', zorder=0)

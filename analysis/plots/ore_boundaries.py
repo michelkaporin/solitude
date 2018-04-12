@@ -41,7 +41,7 @@ def format_interval(y, pos=None):
 
 # ---------------------------- GLOBAL VARIABLES --------------------------------#
 # figure settings
-fig_width_pt = 300.0  # Get this from LaTeX using \showthe
+fig_width_pt = 400.0  # Get this from LaTeX using \showthe
 inches_per_pt = 1.0 / 72.27 * 2  # Convert pt to inches
 golden_mean = ((math.sqrt(5) - 1.0) / 2.0) * .8  # Aesthetic ratio
 fig_width = fig_width_pt * inches_per_pt  # width in inches
@@ -60,24 +60,24 @@ params = {'backend': 'ps',
 plt.rcParams.update(params)
 plt.rc('pdf', fonttype=42)  # IMPORTANT to get rid of Type 3
 
-colors = ['r', 'g', 'b']
+colors = ['0', '0.33', '0.66']
 linestyles = ['-', '-', '-']
 
 fig = plt.figure()
 ax1 = fig.add_subplot(311)
-second, = ax1.plot(x_data[:8000], ore_data[:8000], color=colors[1], linestyle=linestyles[1], linewidth=1.5)
-third, = ax1.plot(x_data[:950], strawman_data[:950], color=colors[2], linestyle=linestyles[2], linewidth=1.5)
-ax1.legend([second, third], ['ORE','Strawman Max'], bbox_to_anchor=(-0.02, 1), loc=3, ncol=3, handletextpad=0.3)
+second, = ax1.plot(x_data[:8000], ore_data[:8000], color=colors[1], linestyle=linestyles[1], linewidth=2)
+third, = ax1.plot(x_data[:950], strawman_data[:950], color=colors[2], linestyle=linestyles[2], linewidth=2)
+ax1.legend([second, third], ['ORE','Strawman Max'], bbox_to_anchor=(0, 1), loc=3, ncol=3, handletextpad=0.3)
 # ax1.xaxis.set_major_locator(ticker.MaxNLocator(5))
 
 ax2 = fig.add_subplot(312)
-ax2.plot(x_data[:255], ore_data[:255], color=colors[1], linestyle=linestyles[1], linewidth=1.5)
-ax2.plot(x_data[:255], strawman_data[:255], color=colors[2], linestyle=linestyles[2], linewidth=1.5)
+ax2.plot(x_data[:255], ore_data[:255], color=colors[1], linestyle=linestyles[1], linewidth=2)
+ax2.plot(x_data[:255], strawman_data[:255], color=colors[2], linestyle=linestyles[2], linewidth=2)
 ax2.set_xlim(0,25000)
 
 ax3 = fig.add_subplot(313)
-ax3.plot(x_data[:55], ore_data[:55], color=colors[1], linestyle=linestyles[1], linewidth=1.5)
-ax3.plot(x_data[:55], strawman_data[:55], color=colors[2], linestyle=linestyles[2], linewidth=1.5)
+ax3.plot(x_data[:55], ore_data[:55], color=colors[1], linestyle=linestyles[1], linewidth=2)
+ax3.plot(x_data[:55], strawman_data[:55], color=colors[2], linestyle=linestyles[2], linewidth=2)
 ax3.set_xlim(0,5000)
 
 for ax in [ax1, ax2, ax3]: 
@@ -88,8 +88,8 @@ for ax in [ax1, ax2, ax3]:
         ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
     ax.grid(True, linestyle=':', color='0.8', zorder=0)
 
-fig.text(0.5, 0.01, 'Chunk intervals', ha='center')
-fig.text(0.02, 0.5, 'Time [ms]', va='center', rotation='vertical')
+fig.text(0.5, 0.04, 'Chunk intervals', ha='center')
+fig.text(0.05, 0.5, 'Time [ms]', va='center', rotation='vertical')
 
 fig.subplots_adjust(hspace=.5, bottom=0.15)
 ax1.legend(loc='best')
