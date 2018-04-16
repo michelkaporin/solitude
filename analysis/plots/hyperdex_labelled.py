@@ -79,7 +79,7 @@ rects2 = ax1.bar(ind + width, mean_labelled, width, color='0.50', yerr=std_label
 rects1 = ax2.bar(ind, mean_ranged, width, color='0.25', yerr=std_ranged, error_kw=dict(ecolor='0.75', lw=2, capsize=5, capthick=2))
 rects2 = ax2.bar(ind + width, mean_labelled, width, color='0.50', yerr=std_labelled, error_kw=dict(ecolor='0.00', lw=2, capsize=5, capthick=2))
 
-ax1.set_ylim(100, 150)  # outliers only
+ax1.set_ylim(100, 180)  # outliers only
 ax2.set_ylim(0, .15)  # most of the data
 
 # hide the spines between ax and ax2
@@ -91,7 +91,7 @@ ax2.xaxis.tick_bottom()
 # d = .015  # how big to make the diagonal lines in axes coordinates
 # # arguments to pass to plot, just so we don't keep repeating them
 # kwargs = dict(transform=ax1.transAxes, color='k', clip_on=False)
-# ax1.plot((-d, +d), (-d, +d), **kwargs)        # top-left diagonal
+# ax1.plot((-d, +d), (-d, +d), **kwargs)        # top-left diagonalPa
 # ax1.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
 
 # kwargs.update(transform=ax2.transAxes)  # switch to the bottom axes
@@ -101,6 +101,7 @@ ax2.xaxis.tick_bottom()
 
 f.text(0.05, 0.5, 'Time [ms]', va='center', rotation='vertical')
 ax2.yaxis.set_major_locator(ticker.MaxNLocator(5))
+ax1.yaxis.set_major_locator(ticker.MaxNLocator(5))
 
 ax1.set_xticks(ind + width)
 ax2.set_xticklabels(types)

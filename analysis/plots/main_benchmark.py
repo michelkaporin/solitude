@@ -101,13 +101,15 @@ mean_stream_search, std_stream_search = compute_avg_std(stream_search)
 ind = np.arange(len(types))
 width = 0.5
 
-rects1 = ax1.bar(ind, mean_baseline_retrieval, width, color='0.25', yerr=std_baseline_retrieval, align='center', error_kw=dict(ecolor='0.75', lw=2, capsize=5, capthick=2))
-rects2 = ax1.bar(ind, mean_baseline_ddd, width, color='0.50', bottom=mean_baseline_retrieval, yerr=std_baseline_ddd, align='center', error_kw=dict(ecolor='0.00', lw=2, capsize=5, capthick=2))
-rects3 = ax1.bar(ind, mean_baseline_search, width, color='0.75', bottom=mean_baseline_retrieval, yerr=std_baseline_search, align='center', error_kw=dict(ecolor='0.25', lw=2, capsize=5, capthick=2))
+error_color = '0.75'
 
-ax3.bar(ind, mean_baseline_retrieval, width, color='0.25', yerr=std_baseline_retrieval, align='center', error_kw=dict(ecolor='0.8', lw=2, capsize=5, capthick=2))
-ax3.bar(ind, mean_baseline_ddd, width, color='0.50', bottom=mean_baseline_retrieval, yerr=std_baseline_ddd, align='center', error_kw=dict(ecolor='0.00', lw=2, capsize=5, capthick=2))
-ax3.bar(ind, mean_baseline_search, width, color='0.75', bottom=mean_baseline_retrieval, yerr=std_baseline_search, align='center', error_kw=dict(ecolor='0.25', lw=2, capsize=5, capthick=2))
+rects1 = ax1.bar(ind, mean_baseline_retrieval, width, color='0.25', yerr=std_baseline_retrieval, align='center', error_kw=dict(ecolor=error_color, lw=2, capsize=5, capthick=2))
+rects2 = ax1.bar(ind, mean_baseline_ddd, width, color='0.50', bottom=mean_baseline_retrieval, align='center')
+rects3 = ax1.bar(ind, mean_baseline_search, width, color='0.75', bottom=mean_baseline_retrieval, align='center', hatch='//')
+
+ax3.bar(ind, mean_baseline_retrieval, width, color='0.25', yerr=std_baseline_retrieval, align='center', error_kw=dict(ecolor=error_color, lw=2, capsize=5, capthick=2))
+ax3.bar(ind, mean_baseline_ddd, width, color='0.50', bottom=mean_baseline_retrieval, align='center')
+ax3.bar(ind, mean_baseline_search, width, color='0.75', bottom=mean_baseline_retrieval, align='center', hatch='//')
 
 ax1.set_ylim(2500, 3500)  # outliers only
 ax3.set_ylim(0, 500)  # most of the data
@@ -148,9 +150,9 @@ pdf_pages.close()
 ### SECOND PLOT
 ###
 f, ax2 = plt.subplots()
-ax2.bar(ind, mean_stream_retrieval, width, color='0.25', yerr=std_stream_retrieval, align='center', error_kw=dict(ecolor='0.8', lw=2, capsize=5, capthick=2))
-ax2.bar(ind, mean_stream_ddd, width, color='0.50', bottom=mean_stream_retrieval, align='center', yerr=std_stream_ddd, error_kw=dict(ecolor='0.00', lw=2, capsize=5, capthick=2))
-ax2.bar(ind, mean_stream_search, width, color='0.75', bottom=mean_stream_retrieval, align='center', yerr=std_stream_search, error_kw=dict(ecolor='0.25', lw=2, capsize=5, capthick=2))
+ax2.bar(ind, mean_stream_retrieval, width, color='0.25', yerr=std_stream_retrieval, align='center', error_kw=dict(ecolor=error_color, lw=2, capsize=5, capthick=2))
+ax2.bar(ind, mean_stream_ddd, width, color='0.50', bottom=mean_stream_retrieval, align='center')
+ax2.bar(ind, mean_stream_search, width, color='0.75', bottom=mean_stream_retrieval, align='center', hatch='//')
 
 #ax2.set_ylabel("Time [ms]")
 plt.xticks(ind, types)
