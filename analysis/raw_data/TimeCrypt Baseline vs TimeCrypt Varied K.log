@@ -79786,23 +79786,3 @@ TimeCrypt+S3	0.96	0.08	0.00	1.05
 TimeCrypt+S3	0.94	0.08	0.00	1.02
 TimeCrypt+S3	0.96	0.08	0.00	1.04
 TimeCrypt+S3	0.93	0.08	0.00	1.01
-
-Exception in thread "main" com.amazonaws.services.s3.model.AmazonS3Exception: The AWS Access Key Id you provided does not exist in our records. (Service: Amazon S3; Status Code: 403; Error Code: InvalidAccessKeyId; Request ID: 69DF103D22C61D61; S3 Extended Request ID: xN5/HlEz4wnYzmhN5YTrrTppxIv7xMFBCkH0RTvp97flGd6SxzgNJ2HIA0FZJdjckEqSFDDnK8Y=), S3 Extended Request ID: xN5/HlEz4wnYzmhN5YTrrTppxIv7xMFBCkH0RTvp97flGd6SxzgNJ2HIA0FZJdjckEqSFDDnK8Y=
-	at com.amazonaws.http.AmazonHttpClient$RequestExecutor.handleErrorResponse(AmazonHttpClient.java:1639)
-	at com.amazonaws.http.AmazonHttpClient$RequestExecutor.executeOneRequest(AmazonHttpClient.java:1304)
-	at com.amazonaws.http.AmazonHttpClient$RequestExecutor.executeHelper(AmazonHttpClient.java:1056)
-	at com.amazonaws.http.AmazonHttpClient$RequestExecutor.doExecute(AmazonHttpClient.java:743)
-	at com.amazonaws.http.AmazonHttpClient$RequestExecutor.executeWithTimer(AmazonHttpClient.java:717)
-	at com.amazonaws.http.AmazonHttpClient$RequestExecutor.execute(AmazonHttpClient.java:699)
-	at com.amazonaws.http.AmazonHttpClient$RequestExecutor.access$500(AmazonHttpClient.java:667)
-	at com.amazonaws.http.AmazonHttpClient$RequestExecutionBuilderImpl.execute(AmazonHttpClient.java:649)
-	at com.amazonaws.http.AmazonHttpClient.execute(AmazonHttpClient.java:513)
-	at com.amazonaws.services.s3.AmazonS3Client.invoke(AmazonS3Client.java:4325)
-	at com.amazonaws.services.s3.AmazonS3Client.invoke(AmazonS3Client.java:4272)
-	at com.amazonaws.services.s3.AmazonS3Client.getAcl(AmazonS3Client.java:3477)
-	at com.amazonaws.services.s3.AmazonS3Client.getBucketAcl(AmazonS3Client.java:1171)
-	at com.amazonaws.services.s3.AmazonS3Client.getBucketAcl(AmazonS3Client.java:1161)
-	at com.amazonaws.services.s3.AmazonS3Client.doesBucketExistV2(AmazonS3Client.java:1296)
-	at ch.michel.S3.deleteBucket(S3.java:99)
-	at ch.michel.test.TimeCryptBenchmark.cleanState(TimeCryptBenchmark.java:337)
-	at ch.michel.test.TimeCryptBenchmark.main(TimeCryptBenchmark.java:317)
